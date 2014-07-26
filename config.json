@@ -1,0 +1,17 @@
+{
+  "env": "test",
+  "transifex": {
+    "host": "www.transifex.com",
+    "base_path": "/api/2/project/",
+    "test":{
+      "user":"",
+      "password":"",
+      "project":""
+    },
+    "production": {
+      "user":"",
+      "password":"",
+      "project":""
+    }
+  }
+}
