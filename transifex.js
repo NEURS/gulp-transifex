@@ -94,9 +94,9 @@ module.exports = {
             form.pipe(req);
             req.on('response', function(res) {
               if(res.statusCode === '200') {
-                msg = chalk.green("✔ ") + chalk.blue("Upload succesful")
+                msg = chalk.green('✔ ') + chalk.blue('Upload succesful')
               } else {
-                msg = chalk.green("✘ ") + chalk.blue("There was an error")
+                msg = chalk.green('✘ ') + chalk.blue('There was an error')
               }
               console.log(msg);
               req.end();
