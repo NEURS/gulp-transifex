@@ -69,16 +69,15 @@ module.exports = {
         return through.obj((function(file, enc, cb) {
           var form, req, request_options;
           if (file.isNull()) {
-            console.log('Is null');
+            console.log(chalk.red('Is null'));
             return cb();
           }
           if (file.isStream()) {
-            console.log('We dont take streams');
+            console.log(chalk.red('We dont take streams'));
             return cb();
           }
           if (path.extname(file.path) === '.po') {
             form = new FormData();
-            console.log(file.path);
             form.append('files', file.contents.toString());
             request_options = {
               hostname: _paths.host,
@@ -91,11 +90,15 @@ module.exports = {
               auth: options.user + ':' + options.password,
               headers: form.getCustomHeaders()
             };
-            console.log(form);
             req = httpClient.request(request_options);
             form.pipe(req);
             req.on('response', function(res) {
-              console.log(chalk.green(res.statusCode));
+              if(res.statusCode === '200') {
+                msg = chalk.green("✔ ") + chalk.blue("Upload succesful")
+              } else {
+                msg = chalk.green("✘ ") + chalk.blue("There was an error")
+              }
+              console.log(msg);
               req.end();
             });
             req.end();
