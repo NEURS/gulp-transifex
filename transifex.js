@@ -1,28 +1,18 @@
-var FormData, assign, chalk, config, env, gutil, httpClient, path, sprintf, through, _paths;
+var assign, chalk, config, env, gutil, httpClient, path, sprintf, through, _paths;
 
 gutil = require('gulp-util');
-
 through = require('through2');
-
 chalk = require('chalk');
-
 path = require('path');
-
 httpClient = require('http');
-
 assign = require('object-assign');
-
 config = require('./config.json');
-
 sprintf = require('sprintf');
-
-FormData = require('form-data');
-
 env = config.env;
 
 _paths = {
-  host: config.host,
-  base_path: config.base_path,
+  host: config.transifex.host,
+  base_path: config.transifex.base_path,
   get_resources: function() {
     return this.base_path + '%(project)s/resources/';
   },
@@ -44,20 +34,21 @@ module.exports = {
           }
         };
       })(),
-      resources: function(cb) {
+      resources: function(callback) {
         var req, request_options;
         request_options = {
-          hostname: _paths.host,
+          host: _paths.host,
           port: '80',
           path: sprintf(_paths.get_resources(), {
             project: options.project
           }),
           method: 'GET',
-          auth: config.user + ':' + options.password
+          auth: options.user + ':' + options.password
         };
         req = httpClient.request(request_options, function(res) {
           res.on('data', function(data) {
-            return cb(JSON.parse(data));
+            callback(JSON.parse(data));
+            return res.end();
           });
         });
         req.on('error', function(err) {
@@ -67,20 +58,24 @@ module.exports = {
       },
       push: function(callback) {
         return through.obj((function(file, enc, cb) {
-          var form, req, request_options;
+          var data, req, request_options;
           if (file.isNull()) {
-            console.log(chalk.red('Is null'));
-            return cb();
+            console.log('Is null');
+            cb();
+            return;
           }
           if (file.isStream()) {
-            console.log(chalk.red('We dont take streams'));
-            return cb();
+            console.log('We dont take streams');
+            cb();
+            return;
           }
           if (path.extname(file.path) === '.po') {
-            form = new FormData();
-            form.append('files', file.contents.toString());
+            data = {
+              content: file.contents.toString('utf8')
+            };
+            data = JSON.stringify(data);
             request_options = {
-              hostname: _paths.host,
+              host: _paths.host,
               port: '80',
               path: sprintf(_paths.update_resource(), {
                 project: options.project,
@@ -88,44 +83,31 @@ module.exports = {
               }),
               method: 'PUT',
               auth: options.user + ':' + options.password,
-              headers: form.getCustomHeaders()
+              headers: {
+                "Content-type": "application/json",
+                "Content-length": data.length
+              }
             };
             req = httpClient.request(request_options);
-            form.pipe(req);
             req.on('response', function(res) {
-              if(res.statusCode === '200') {
-                msg = chalk.green('✔ ') + chalk.blue('Upload succesful')
-              } else {
-                msg = chalk.green('✘ ') + chalk.blue('There was an error')
-              }
+              var msg;
+              msg = res.statusCode === 200 ? chalk.green('✔ ') + chalk.blue('Upload succesful') : chalk.red('✘ ') + chalk.blue('There was an error: ' + httpClient.STATUS_CODES[res.statusCode]);
               console.log(msg);
-              req.end();
+              req.end()
+              cb();
             });
+            req.on('error', function(err) {
+              console.log(chalk.red(err));
+              req.end()
+              cb();
+            });
+            req.write(data);
             req.end();
-            return cb();
           }
         }), function(cb) {
           if (callback != null) {
             callback();
           }
-          return cb();
-        });
-      },
-      pull: function() {
-        return through.obj((function(file, enc, cb) {
-          if (file.isNull()) {
-            console.log('Is null');
-            return cb();
-          }
-          if (file.isStream()) {
-            console.log('We dont take streams');
-            return cb();
-          }
-          if (path.extname(file.path) === '.po') {
-            console.log(file.contents.toString());
-          }
-          return cb();
-        }), function(cb) {
           return cb();
         });
       }
