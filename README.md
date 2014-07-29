@@ -51,7 +51,7 @@ Other methods exposed
 
 There are other methods exposed that doesn't return streams but accepts callbacks:
 
-###transifex.get_resources
+###get_resources()
 
 Gets an array of resources in the project
 
@@ -63,7 +63,7 @@ transifex.get_resources(function(data){
 })
 ```
 
-###transifex.get_resources
+###get_languages()
 
 Gets an array of language codes in the project
 
