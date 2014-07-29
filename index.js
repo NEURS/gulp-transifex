@@ -300,6 +300,8 @@ module.exports = {
             data.forEach(function(elm, idx, lst) {
               var file_name, local_path, op, output, req;
               op = '';
+	      local_path = path.resolve(_this._paths.local_path + '/' + elm);
+	      file_name = local_path + '/' + path.basename(file.path);
               request_options.path = _this._paths.get_or_create_translation({
                 resource: path.basename(file.path, '.po') + 'po',
                 language: elm
@@ -329,8 +331,6 @@ module.exports = {
                   return cb();
                 });
               });
-              local_path = path.resolve(_this._paths.local_path + '/' + elm);
-              file_name = local_path + '/' + path.basename(file.path);
               if (!fs.existsSync(local_path)) {
                 fs.mkdirSync(local_path);
               }
