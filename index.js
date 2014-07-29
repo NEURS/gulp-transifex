@@ -273,7 +273,6 @@ module.exports = {
     
     this.pullResource = function(callback) {
       var buffer;
-      
       return buffer = through.obj((function(file, enc, cb) {
         var languages, request_options;
         if (file.isNull()) {
@@ -299,15 +298,15 @@ module.exports = {
           };
           languages = _this.languages(function(data) {
             data.forEach(function(elm, idx, lst) {
-              var local_path, op, output, req, file_name;
+              var file_name, local_path, op, output, req;
               op = '';
               request_options.path = _this._paths.get_or_create_translation({
                 resource: path.basename(file.path, '.po') + 'po',
                 language: elm
               });
-              req = httpClient.request(request_options, function(res) {
+              req = httpClient.get(request_options, function(res) {
+                gutil.log(chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path)));
                 res.on('data', function(data) {
-                  var msg;
                   if (parseInt(res.statusCode) !== 200) {
                     if (parseInt(res.statusCode) === 404) {
                       gutil.log(chalk.red('✘ ') + chalk.blue(request_options.path) + chalk.white("Does not exist"));
@@ -318,25 +317,24 @@ module.exports = {
                       }));
                     }
                   }
-                  op += data;
-                  return msg = chalk.green('✔ ') + chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path));
+                  return op += data;
                 });
-                
                 return res.on('end', function() {
+                  gutil.log(chalk.green('✔ ') + chalk.blue(path.basename(file.path))) + chalk.white('Downloaded: ');
                   data = JSON.parse(op).content;
                   output.write(data);
                   output.end();
-                  return req.end();
+                  req.end();
+                  buffer.push(file);
+                  return cb();
                 });
               });
-              
               local_path = path.resolve(_this._paths.local_path + '/' + elm);
-              file_name = local_path + '/' + path.basename(file.path)
+              file_name = local_path + '/' + path.basename(file.path);
               if (!fs.existsSync(local_path)) {
                 fs.mkdirSync(local_path);
               }
               output = fs.createWriteStream(file_name);
-              
               req.on('error', function(err) {
                 return buffer.emit('error', new gutil.PluginError({
                   plugin: 'gulp-transifex',
@@ -344,17 +342,14 @@ module.exports = {
                   fileName: file.path
                 }));
               });
-              req.end();
             });
-            buffer.push(file);
-            cb();
           });
         }
       }), function(cb) {
         if (callback) {
           callback();
         }
-        gutil.log(chalk.green('✔ ') + chalk.white('File saved to: ') + chalk.blue(file_name));
+        gutil.log("File saved");
         cb();
       });
     };
