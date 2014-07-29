@@ -42,7 +42,7 @@ var gulp = require('gulp')
 
 gulp.task('downstream', function(){
     gulp.src('path/to/source/language/*')
-        .pipe(transifex.pushResource())
+        .pipe(transifex.pullResource())
 })
 ```
 
