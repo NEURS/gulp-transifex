@@ -19,44 +19,44 @@ module.exports = {
       base_path: options.base_path || '/api/2/project/',
       host: options.host || 'www.transifex.com',
       local_path: options.local_path || 'locale',
-
+      
       get_languages: function() {
-	return sprintf(this.base_path + '%(project)s/languages/', {
-	  project: options.project
-	});
+        return sprintf(this.base_path + '%(project)s/languages/', {
+          project: options.project
+        });
       },
-
+      
       get_or_create_resources: function() {
-	return sprintf(this.base_path + '%(project)s/resources/', {
-	  project: options.project
-	});
+        return sprintf(this.base_path + '%(project)s/resources/', {
+          project: options.project
+        });
       },
-
+      
       get_or_create_translation: function(vars) {
-	return sprintf(this.base_path + '%(project)s/resource/%(resource)s/translation/%(language)s/', util._extend({
-	  project: options.project
-	}, vars));
+        return sprintf(this.base_path + '%(project)s/resource/%(resource)s/translation/%(language)s/', util._extend({
+          project: options.project
+        }, vars));
       },
-
+      
       local_translations_path: function(vars) {
-	return sprintf('%(local_path)s/%(language)s/', util._extend({
-	  local_path: options.local_path
-	}, vars));
+        return sprintf('%(local_path)s/%(language)s/', util._extend({
+          local_path: options.local_path
+        }, vars));
       },
-
+      
       update_resource: function(vars) {
-	return sprintf(this.base_path + '%(project)s/resource/%(resource)s/content/', util._extend({
-	  project: options.project
-	}, vars));
+        return sprintf(this.base_path + '%(project)s/resource/%(resource)s/content/', util._extend({
+          project: options.project
+        }, vars));
       }
     };
     this.resources = function(callback) {
       var req, request_options;
-
+      
       request_options = {
-	host: _this._paths.host,
+        host: _this._paths.host,
         port: '80',
-	path: _this._paths.get_or_create_resources({
+        path: _this._paths.get_or_create_resources({
           project: options.project
         }),
         method: 'GET',
@@ -64,12 +64,12 @@ module.exports = {
       };
       req = httpClient.request(request_options, function(res) {
         return res.on('data', function(data) {
-	  if (parseInt(res.statusCode) !== 200) {
+          if (parseInt(res.statusCode) !== 200) {
             req.emit('error', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
           }
-	  res.on('end', function() {
-	      callback(JSON.parse(data.toString('utf8')));
-	  })
+          res.on('end', function() {
+              callback(JSON.parse(data.toString('utf8')));
+          })
         });
       });
       
@@ -82,33 +82,33 @@ module.exports = {
       var req, request_options;
       
       request_options = {
-	host: _this._paths.host,
-	port: '80',
-	path: _this._paths.get_languages({
-	  project: options.project
-	}),
-	method: 'GET',
-	auth: options.user + ':' + options.password
+        host: _this._paths.host,
+        port: '80',
+        path: _this._paths.get_languages({
+          project: options.project
+        }),
+        method: 'GET',
+        auth: options.user + ':' + options.password
       };
       req = httpClient.request(request_options, function(res) {
-	return res.on('data', function(data) {
-	  var languages;
-	  if (parseInt(res.statusCode) === 200) {
-	    languages = JSON.parse(data.toString('utf8'));
-	    languages = languages.map(function(elm, idx, langs) {
-	      return elm.language_code;
-	    });
-	  } else {
-	    req.emit('error', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
-	  }
-	  res.on('end', function() {
-	      callback(languages);
-	  })
-	});
+        return res.on('data', function(data) {
+          var languages;
+          if (parseInt(res.statusCode) === 200) {
+            languages = JSON.parse(data.toString('utf8'));
+            languages = languages.map(function(elm, idx, langs) {
+              return elm.language_code;
+            });
+          } else {
+            req.emit('error', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
+          }
+          res.on('end', function() {
+              callback(languages);
+          })
+        });
       });
-
+      
       req.on('error', function(err) {
-	console.log(chalk.red(err));
+        console.log(chalk.red(err));
       });
       req.end();
     };
@@ -119,16 +119,16 @@ module.exports = {
       return buffer = through.obj((function(file, enc, cb) {
         var data, msg, req, request_options;
         if (file.isNull() || file.isDirectory()) {
-	  cb();
-	  return;
+          cb();
+          return;
         }
         if (file.isStream()) {
-	  buffer.emit('error', new gutil.PluginError({
-	    plugin: 'gulp-transifex',
+          buffer.emit('error', new gutil.PluginError({
+            plugin: 'gulp-transifex',
             message: "Streams not supported"
-	  }));
-	  cb();
-	  return;
+          }));
+          cb();
+          return;
         }
         if (file.isBuffer() && path.extname(file.path) === '.po') {
           data = {
@@ -136,9 +136,9 @@ module.exports = {
           };
           data = JSON.stringify(data);
           request_options = {
-	    host: _this._paths.host,
+            host: _this._paths.host,
             port: '80',
-	    path: _this._paths.update_resource({
+            path: _this._paths.update_resource({
               project: options.project,
               resource: path.basename(file.path, '.po') + 'po'
             }),
@@ -160,39 +160,39 @@ module.exports = {
               msg = chalk.green('✔ ') + chalk.blue('Upload successful');
             } else {
               if (parseInt(res.statusCode) === 404) {
-		buffer.pipe(_this.createNewResource());
+                buffer.pipe(_this.createNewResource());
               } else {
                 msg = chalk.red('✘ ') + chalk.blue('Error: ' + httpClient.STATUS_CODES[res.statusCode]);
-		buffer.emit('error', new gutil.PluginError({
-		  plugin: 'gulp-transifex',
-		  message: msg,
+                buffer.emit('error', new gutil.PluginError({
+                  plugin: 'gulp-transifex',
+                  message: msg,
                   fileName: file.path
                 }));
               }
             }
-
+            
             gutil.log(msg);
             req.end();
-	    cb();
+            cb();
           });
           req.on('error', function(err) {
             req.end();
-	    buffer.emit('error', new gutil.PluginError({
-	      plugin: 'gulp-transifex',
-	      message: err,
+            buffer.emit('error', new gutil.PluginError({
+              plugin: 'gulp-transifex',
+              message: err,
               fileName: file.path
             }));
-	    cb();
+            cb();
           });
           req.write(data);
-	  return buffer.push(file);
+          return buffer.push(file);
         }
       }), function(cb) {
         if (callback != null) {
           callback();
         }
         gutil.log(chalk.cyan.bold("Language files uploaded to transifex"));
-	cb();
+        cb();
       });
     };
     this.createNewResource = function(callback) {
@@ -200,21 +200,21 @@ module.exports = {
       return buffer = through.obj((function(file, enc, cb) {
         var data, req, request_options;
         if (file.isNull() || file.isDirectory()) {
-	  cb();
-	  return;
+          cb();
+          return;
         }
         if (file.isStream()) {
-	  buffer.emit('error', new gutil.PluginError('gulp-transifex', "Error", {
+          buffer.emit('error', new gutil.PluginError('gulp-transifex', "Error", {
             message: "Streams not supported"
           }));
-	  cb();
-	  return;
+          cb();
+          return;
         }
         if (file.isBuffer() && path.extname(file.path) === '.po') {
           data = {
             content: file.contents.toString('utf8'),
-	    name: _this._paths.basename(file.path),
-	    slug: _this._path.basename(file.path, '.po') + 'po',
+            name: _this._paths.basename(file.path),
+            slug: _this._path.basename(file.path, '.po') + 'po',
             i18n_type: 'PO'
           };
           data = JSON.stringify(data);
@@ -239,123 +239,123 @@ module.exports = {
               msg = chalk.green('✔ ') + chalk.blue('Upload successful');
             } else {
               msg = chalk.red('✘ ') + chalk.blue('Error: ' + httpClient.STATUS_CODES[res.statusCode]);
-	      buffer.emit('error', new gutil.PluginError({
-		plugin: 'gulp-transifex',
-		message: msg,
+              buffer.emit('error', new gutil.PluginError({
+                plugin: 'gulp-transifex',
+                message: msg,
                 fileName: file.path
               }));
             }
-	    res.on('end', function () {
-		gutil.log(msg);
-	    });
-	    cb();
+            res.on('end', function () {
+                gutil.log(msg);
+            });
+            cb();
           });
           req.on('error', function(err) {
             req.end();
-	    _this.emit('error', new gutil.pluginError({
-	      plugin: 'gulp-transifex',
-	      message: err,
+            _this.emit('error', new gutil.pluginError({
+              plugin: 'gulp-transifex',
+              message: err,
               fileName: file.path
             }));
-	    cb();
+            cb();
           });
           req.write(data);
-	  buffer.push(file);
+          buffer.push(file);
         }
       }), function(cb) {
         if (callback != null) {
           callback();
         }
         gutil.log(chalk.cyan.bold("Language files created in transifex"));
-	cb();
+        cb();
       });
     };
-
+    
     this.pullResource = function(callback) {
       var buffer;
-
+      
       return buffer = through.obj((function(file, enc, cb) {
-	var languages, request_options;
-	if (file.isNull()) {
-	  buffer.emit('error', new gutil.PluginError({
-	    plugin: 'gulp-transifex',
-	    message: "Null files are not supported"
-	  }));
-	  cb();
-	  return;
-	}
-	if (file.isStream()) {
-	  buffer.emit('error', new gutil.PluginError({
-	    plugin: 'gulp-transifex',
-	    message: "Streams not supported"
-	  }));
-	}
-	if (file.isBuffer() && path.extname(file.path) === '.po') {
-	  request_options = {
-	    host: _this._paths.host,
-	    port: '80',
-	    method: 'GET',
-	    auth: options.user + ':' + options.password
-	  };
-	  languages = _this.languages(function(data) {
-	    data.forEach(function(elm, idx, lst) {
-	      var local_path, op, output, req, file_name;
-	      op = '';
-	      request_options.path = _this._paths.get_or_create_translation({
-		resource: path.basename(file.path, '.po') + 'po',
-		language: elm
-	      });
-	      req = httpClient.request(request_options, function(res) {
-		res.on('data', function(data) {
-		  var msg;
-		  if (parseInt(res.statusCode) !== 200) {
-		    if (parseInt(res.statusCode) === 404) {
-		      gutil.log(chalk.red('✘ ') + chalk.blue(request_options.path) + chalk.white("Does not exist"));
-		    } else {
-		      buffer.emit('error', new gutil.PluginError({
-			plugin: 'gulp-transifex',
-			message: res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]
-		      }));
-		    }
-		  }
-		  op += data;
-		  return msg = chalk.green('✔ ') + chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path));
-		});
-
-		return res.on('end', function() {
-		  data = JSON.parse(op).content;
-		  output.write(data);
-		  output.end();
-		  return req.end();
-		});
-	      });
-
-	      local_path = path.resolve(_this._paths.local_path + '/' + elm);
-	      file_name = local_path + '/' + path.basename(file.path)
-	      if (!fs.existsSync(local_path)) {
-		fs.mkdirSync(local_path);
-	      }
-	      output = fs.createWriteStream(file_name);
-
-	      req.on('error', function(err) {
-		return buffer.emit('error', new gutil.PluginError({
-		  plugin: 'gulp-transifex',
-		  message: err,
-		  fileName: file.path
-		}));
-	      });
-	      req.end();
-	    });
-	    buffer.push(file);
-	    cb();
-	  });
-	}
+        var languages, request_options;
+        if (file.isNull()) {
+          buffer.emit('error', new gutil.PluginError({
+            plugin: 'gulp-transifex',
+            message: "Null files are not supported"
+          }));
+          cb();
+          return;
+        }
+        if (file.isStream()) {
+          buffer.emit('error', new gutil.PluginError({
+            plugin: 'gulp-transifex',
+            message: "Streams not supported"
+          }));
+        }
+        if (file.isBuffer() && path.extname(file.path) === '.po') {
+          request_options = {
+            host: _this._paths.host,
+            port: '80',
+            method: 'GET',
+            auth: options.user + ':' + options.password
+          };
+          languages = _this.languages(function(data) {
+            data.forEach(function(elm, idx, lst) {
+              var local_path, op, output, req, file_name;
+              op = '';
+              request_options.path = _this._paths.get_or_create_translation({
+                resource: path.basename(file.path, '.po') + 'po',
+                language: elm
+              });
+              req = httpClient.request(request_options, function(res) {
+                res.on('data', function(data) {
+                  var msg;
+                  if (parseInt(res.statusCode) !== 200) {
+                    if (parseInt(res.statusCode) === 404) {
+                      gutil.log(chalk.red('✘ ') + chalk.blue(request_options.path) + chalk.white("Does not exist"));
+                    } else {
+                      buffer.emit('error', new gutil.PluginError({
+                        plugin: 'gulp-transifex',
+                        message: res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]
+                      }));
+                    }
+                  }
+                  op += data;
+                  return msg = chalk.green('✔ ') + chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path));
+                });
+                
+                return res.on('end', function() {
+                  data = JSON.parse(op).content;
+                  output.write(data);
+                  output.end();
+                  return req.end();
+                });
+              });
+              
+              local_path = path.resolve(_this._paths.local_path + '/' + elm);
+              file_name = local_path + '/' + path.basename(file.path)
+              if (!fs.existsSync(local_path)) {
+                fs.mkdirSync(local_path);
+              }
+              output = fs.createWriteStream(file_name);
+              
+              req.on('error', function(err) {
+                return buffer.emit('error', new gutil.PluginError({
+                  plugin: 'gulp-transifex',
+                  message: err,
+                  fileName: file.path
+                }));
+              });
+              req.end();
+            });
+            buffer.push(file);
+            cb();
+          });
+        }
       }), function(cb) {
-	if (callback) {
-	  callback();
-	}
-	gutil.log(chalk.green('✔ ') + chalk.white('File saved to: ') + chalk.blue(file_name));
-	cb();
+        if (callback) {
+          callback();
+        }
+        gutil.log(chalk.green('✔ ') + chalk.white('File saved to: ') + chalk.blue(file_name));
+        cb();
       });
     };
     return _this;
