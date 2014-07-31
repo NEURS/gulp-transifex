@@ -140,19 +140,22 @@ module.exports = {
         user: options.user,
         password: options.password
       }, function(res) {
-        return res.on('data', function(data) {
-          var languages;
+         var languages = '';
+        res.on('data', function(data) {
           
           if (parseInt(res.statusCode) === 200) {
-            languages = JSON.parse(data.toString('utf8'));
-            languages = languages.map(function(elm, idx, langs) {
-              return elm.language_code;
-            });
-            callback(languages);
+            languages += data.toString('utf8')
           } else {
             req.emit('error in languages()', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
           }
         });
+        res.on('end', function(){
+          languages = JSON.parse(languages);
+          languages = languages.map(function(elm, idx, langs) {
+              return elm.language_code;
+            });
+            callback(languages);
+        })
       });
       
       req.on('error', function(err) {
@@ -221,6 +224,7 @@ module.exports = {
                 req.on('response', function(res) {
                   if (parseInt(res.statusCode) === 200) {
                     msg = chalk.green('✔ ') + chalk.magenta(path.basename(file.path)) + chalk.blue(' Uploaded successful');
+                    cb();
                   } else {
                     if (parseInt(res.statusCode) === 404 || parseInt(res.statusCode) === 400) {
                       data = {
@@ -256,6 +260,7 @@ module.exports = {
                             message: msg,
                             fileName: file.path
                           }));
+                          cb();
                         }
                         req2.end();
                         gutil.log(msg);
@@ -298,6 +303,82 @@ module.exports = {
           });
         }
       }), function(cb) {
+        if (callback != null) {
+          callback();
+        }
+        cb();
+      });
+    };
+    this.createNewResource = function(callback) {
+      var buffer;
+      return buffer = through.obj((function(file, enc, cb) {
+              console.log("creating: ", file.path);
+              buffer.setMaxListeners(0);
+              var data, req, request_options;
+              if (file.isNull() || file.isDirectory()) {
+                cb();
+                return;
+              }
+              if (file.isStream()) {
+                buffer.emit('error creating new resource: ', new gutil.PluginError('gulp-transifex', "Error", {
+                  message: "Streams not supported"
+                }));
+                cb();
+                return;
+              }
+              if (file.isBuffer() && path.extname(file.path) === '.po') {
+      
+                data = {
+                  content: file.contents.toString('utf8'),
+                  name: path.basename(file.path),
+                  slug: path.basename(file.path, '.po') + 'po',
+                  i18n_type: 'PO'
+                };
+                data = JSON.stringify(data);
+                request_options = {
+                  host: _this._paths.host,
+                  port: '80',
+                  path: _this._paths.get_or_create_resources({
+                    project: options.project
+                  }),
+                  method: 'POST',
+                  auth: options.user + ':' + options.password,
+                  headers: {
+                    "Content-type": "application/json",
+                    "Content-length": data.length
+                  }
+                };
+      
+                req = httpClient.request(request_options);
+                
+                req.on('response', function(res){
+                  var msg = "Uploading";
+                  if (parseInt(res.statusCode) === 201) {
+                    msg = chalk.green('✔ ') + chalk.blue('Upload successful');
+                  } else {
+                    msg = chalk.red('✘ ') + chalk.white('Error creating new resource ') +chalk.magenta(path.basename(file.path)) + ': ' + chalk.white(httpClient.STATUS_CODES[res.statusCode]);
+                    buffer.emit('', new gutil.PluginError({
+                      plugin: 'gulp-transifex',
+                      message: msg,
+                      fileName: file.path
+                    }));
+                  }
+                  req.end();
+                  gutil.log(msg);
+                  buffer.push(file);
+                });
+                
+                req.on('error', function(err) {
+                  req.end();
+                  buffer.emit('error ', new gutil.pluginError({
+                    plugin: 'gulp-transifex',
+                    message: err,
+                    fileName: file.path
+                  }));
+                });
+                req.write(data);
+              }
+            }), function(cb) {
         if (callback != null) {
           callback();
         }
@@ -368,23 +449,26 @@ module.exports = {
                   try {
                     data = JSON.parse(op).content;
                     output.write(data);
+                    buffer.push(file);
+                    cb();
                   } catch (e) {
                     output.end();
-                    buffer.push(file);
-                    cb()
+                    buffer.emit('error downloading a translation', new gutil.PluginError({
+                        plugin: 'gulp-transifex',
+                        message: res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]
+                      }));
                   }
                   output.end();
                   req.end();
-                  buffer.push(file);
                   if(callback!=null){
                     callback()
                   }
-                  return cb();
                 });
               });
               if (!fs.existsSync(local_path)) {
                 fs.mkdirSync(local_path);
               }
+
               output = fs.createWriteStream(file_name);
               
               req.on('error', function(err) {
@@ -396,7 +480,9 @@ module.exports = {
               });
             });
           });
+          
         }
+
       }), function(cb) {
         if (callback) {
           callback();
