@@ -9,6 +9,7 @@ util = require('util');
 
 module.exports = function(method, path, options, cb) {
   var request_options, _paths;
+
   options = util._extend({}, options || {});
   _paths = paths(options);
   request_options = {

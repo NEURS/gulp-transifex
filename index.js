@@ -103,7 +103,6 @@ module.exports = {
             }else{
 
               newFile = true;
-              console.log(path.basename(file.path), newFile);
             }
             cb();
           });
@@ -116,7 +115,6 @@ module.exports = {
           if(callback){
             callback(returnValue  || newFile)
           }
-          console.log(path.basename(file.path), returnValue,  "||", newFile, returnValue  || newFile)
           return returnValue  || newFile
           cb()
         }
@@ -211,8 +209,8 @@ module.exports = {
                   method: 'PUT',
                   auth: options.user + ':' + options.password,
                   headers: {
-                    "Content-type": "application/json",
-                    "Content-length": data.length
+                    "content-type": "application/json",
+                    "content-length": Buffer.byteLength(data)
                   }
                 };
                 req = httpClient.request(request_options);
@@ -224,10 +222,53 @@ module.exports = {
                   if (parseInt(res.statusCode) === 200) {
                     msg = chalk.green('✔ ') + chalk.magenta(path.basename(file.path)) + chalk.blue(' Uploaded successful');
                   } else {
-                    if (parseInt(res.statusCode) === 404) {
+                    if (parseInt(res.statusCode) === 404 || parseInt(res.statusCode) === 400) {
+                      data = {
+                        content: file.contents.toString('utf8'),
+                        name:path.basename(file.path),
+                        slug:path.basename(file.path).replace(/\./,''),
+                        i18n_type:'PO'
+                      };
+                      data = JSON.stringify(data);
+                      request_options = {
+                        host: _this._paths.host,
+                        port: '80',
+                        path: _this._paths.get_or_create_resources({
+                          project: options.project
+                        }),
+                        method: 'POST',
+                        auth: options.user + ':' + options.password,
+                        headers: {
+                          "content-type": "application/json",
+                          "content-length": Buffer.byteLength(data)
+                        }
+                      };
+                      req2 = httpClient.request(request_options);
                       msg = chalk.white("Creating new Resource: ") + chalk.blue(path.basename(file.path))
-                      buffer.pipe(_this.createNewResource(buffer.unpipe));
-                      cb();
+                      req2.on('response', function(res){
+                        var msg = "Uploading";
+                        if (parseInt(res.statusCode) === 201) {
+                          msg = chalk.green('✔ ') + chalk.blue('Upload successful');
+                        } else {
+                          msg = chalk.red('✘ ') + chalk.white('Error creating new resource ') +chalk.magenta(path.basename(file.path)) + ': ' + chalk.white(httpClient.STATUS_CODES[res.statusCode]);
+                          buffer.emit('Error:', new gutil.PluginError({
+                            plugin: 'gulp-transifex',
+                            message: msg,
+                            fileName: file.path
+                          }));
+                        }
+                        req2.end();
+                        gutil.log(msg);
+                      });
+                      req2.on('error', function(err) {
+                        req.end();
+                        buffer.emit('error ', new gutil.PluginError({
+                          plugin: 'gulp-transifex',
+                          message: err,
+                          fileName: file.path
+                        }));
+                      });
+                      req2.write(data);
                     } else {
                       msg = chalk.red('✘ ') + chalk.blue('Error: ' + httpClient.STATUS_CODES[res.statusCode]);
                       buffer.emit('error in pushResources ', new gutil.PluginError({
@@ -237,7 +278,6 @@ module.exports = {
                       }));
                     }
                   }
-                  req.end();
                   gutil.log(msg);
                 });
                 
@@ -248,7 +288,6 @@ module.exports = {
                     message: err,
                     fileName: file.path
                   }));
-                  cb();
                 });
                 req.write(data);
               }
@@ -260,83 +299,6 @@ module.exports = {
         }
       }), function(cb) {
         if (callback != null) {
-          callback();
-        }
-        cb();
-      });
-    };
-    this.createNewResource = function(callback) {
-      var buffer;
-      return buffer = through.obj((function(file, enc, cb) {
-              buffer.setMaxListeners(0);
-              var data, req, request_options;
-              if (file.isNull() || file.isDirectory()) {
-                cb();
-                return;
-              }
-              if (file.isStream()) {
-                buffer.emit('error creating new resource: ', new gutil.PluginError('gulp-transifex', "Error", {
-                  message: "Streams not supported"
-                }));
-                cb();
-                return;
-              }
-              if (file.isBuffer() && path.extname(file.path) === '.po') {
-                console.log("actually creating the resource")
-      
-                data = {
-                  content: file.contents.toString('utf8'),
-                  name: path.basename(file.path),
-                  slug: path.basename(file.path, '.po') + 'po',
-                  i18n_type: 'PO'
-                };
-                data = JSON.stringify(data);
-                request_options = {
-                  host: _this._paths.host,
-                  port: '80',
-                  path: _this._paths.get_or_create_resources({
-                    project: options.project
-                  }),
-                  method: 'POST',
-                  auth: options.user + ':' + options.password,
-                  headers: {
-                    "Content-type": "application/json",
-                    "Content-length": data.length
-                  }
-                };
-      
-                req = httpClient.request(request_options);
-                
-                req.on('response', function(res){
-                  var msg = "Uploading";
-                  if (parseInt(res.statusCode) === 201) {
-                    msg = chalk.green('✔ ') + chalk.blue('Upload successful');
-                  } else {
-                    msg = chalk.red('✘ ') + chalk.white('Error creating new resource ') +chalk.magenta(path.basename(file.path)) + ': ' + chalk.white(httpClient.STATUS_CODES[res.statusCode]);
-                    buffer.emit('', new gutil.PluginError({
-                      plugin: 'gulp-transifex',
-                      message: msg,
-                      fileName: file.path
-                    }));
-                  }
-                  req.end();
-                  gutil.log(msg);
-                  buffer.push(file);
-                });
-                
-                req.on('error', function(err) {
-                  req.end();
-                  buffer.emit('error ', new gutil.pluginError({
-                    plugin: 'gulp-transifex',
-                    message: err,
-                    fileName: file.path
-                  }));
-                });
-                req.write(data);
-              }
-            }), function(cb) {
-        if (callback != null) {
-          console.log(callback.toString())
           callback();
         }
         cb();

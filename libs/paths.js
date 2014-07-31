@@ -31,6 +31,9 @@ module.exports = function(options) {
         local_path: options.local_path
       }, vars));
     },
+    get_resource: function (vars) {
+      return sprintf(this.base_path + '%(project)s/resource/%(resource)s/?details', vars);
+    },
     update_resource: function(vars) {
       return sprintf(this.base_path + '%(project)s/resource/%(resource)s/content/', util._extend({
         project: options.project
