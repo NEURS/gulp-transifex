@@ -3,6 +3,8 @@ gulp-transifex
 
 Gulp plugin for uploading resources and downloading translations in Transifex
 
+**Not ready for production use**: is still buggy and unreliable. Feel free to fork and improve
+
 Usage
 ------
 

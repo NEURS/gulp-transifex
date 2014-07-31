@@ -21,9 +21,6 @@ module.exports = function(method, path, options, cb) {
   if (options.headers) {
     request_options.headers = options.headers;
   }
-  if (options.params) {
-    request_options.params = options.params;
-  }
   if (method.toUpperCase() === 'GET') {
     return http.get(request_options, cb);
   } else {
