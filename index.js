@@ -37,7 +37,7 @@ module.exports = {
         });
         res.on('end', function () {
           try {
-            callback(results);
+            callback(JSON.parse(results));
           } catch (err) {
             callback(err)
           }
@@ -194,6 +194,7 @@ module.exports = {
                 gutil.log(chalk.blue("Newer version of ")+chalk.magenta(path.basename(file.path))+chalk.blue(" on the server. No operation done"));
                 buffer.push(file);
                 cb();
+                cbSync();
               }else{
                 data = {
                   content: file.contents.toString('utf8')
@@ -221,6 +222,8 @@ module.exports = {
                 req.on('response', function(res) {
                   if (parseInt(res.statusCode) === 200) {
                     msg = chalk.green('✔ ') + chalk.magenta(path.basename(file.path)) + chalk.blue(' Uploaded successful');
+                    cb();
+                    cbSync();
                   } else {
                     if (parseInt(res.statusCode) === 404 || parseInt(res.statusCode) === 400) {
                       data = {
@@ -259,6 +262,8 @@ module.exports = {
                         }
                         req2.end();
                         gutil.log(msg);
+                        cb();
+                        cbSync();
                       });
                       req2.on('error', function(err) {
                         req.end();
@@ -267,6 +272,8 @@ module.exports = {
                           message: err,
                           fileName: file.path
                         }));
+                        cb();
+                        cbSync();
                       });
                       req2.write(data);
                     } else {
@@ -279,6 +286,7 @@ module.exports = {
                     }
                   }
                   gutil.log(msg);
+                  cbSync();
                 });
                 
                 req.on('error', function(err) {
@@ -288,13 +296,20 @@ module.exports = {
                     message: err,
                     fileName: file.path
                   }));
+                  cbSync(err);
                 });
                 req.write(data);
               }
             }
           ], function(err, results){
+            if(err){
+              buffer.emit('error in pushResources ', new gutil.PluginError({
+                plugin: 'gulp-transifex',
+                message: err,
+                fileName: file.path
+              }));
+            }
             buffer.push(file);
-            cb()
           });
         }
       }), function(cb) {
@@ -351,8 +366,6 @@ module.exports = {
                   if (parseInt(res.statusCode) !== 200) {
                     if (parseInt(res.statusCode) === 404) {
                       gutil.log(chalk.red('✘ ') + chalk.blue(request_options.path) + chalk.white("Does not exist"));
-                      buffer.push(file);
-                      return cb();
                     } else {
                       buffer.emit('error downloading a translation', new gutil.PluginError({
                         plugin: 'gulp-transifex',
@@ -370,8 +383,6 @@ module.exports = {
                     output.write(data);
                   } catch (e) {
                     output.end();
-                    buffer.push(file);
-                    cb()
                   }
                   output.end();
                   req.end();
@@ -379,7 +390,6 @@ module.exports = {
                   if(callback!=null){
                     callback()
                   }
-                  return cb();
                 });
               });
               if (!fs.existsSync(local_path)) {
