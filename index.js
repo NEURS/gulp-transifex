@@ -210,7 +210,7 @@ module.exports = {
                   auth: options.user + ':' + options.password,
                   headers: {
                     "content-type": "application/json",
-                    "content-length": data.length
+                    "content-length": Buffer.byteLength(data)
                   }
                 };
                 req = httpClient.request(request_options);
