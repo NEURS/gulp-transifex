@@ -140,19 +140,22 @@ module.exports = {
         user: options.user,
         password: options.password
       }, function(res) {
-        return res.on('data', function(data) {
-          var languages;
+         var languages = '';
+        res.on('data', function(data) {
           
           if (parseInt(res.statusCode) === 200) {
-            languages = JSON.parse(data.toString('utf8'));
-            languages = languages.map(function(elm, idx, langs) {
-              return elm.language_code;
-            });
-            callback(languages);
+            languages += data.toString('utf8')
           } else {
             req.emit('error in languages()', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
           }
         });
+        res.on('end', function(){
+          languages = JSON.parse(languages);
+          languages = languages.map(function(elm, idx, langs) {
+              return elm.language_code;
+            });
+            callback(languages);
+        })
       });
       
       req.on('error', function(err) {
@@ -446,23 +449,26 @@ module.exports = {
                   try {
                     data = JSON.parse(op).content;
                     output.write(data);
+                    buffer.push(file);
+                    cb();
                   } catch (e) {
                     output.end();
-                    buffer.push(file);
-                    cb()
+                    buffer.emit('error downloading a translation', new gutil.PluginError({
+                        plugin: 'gulp-transifex',
+                        message: res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]
+                      }));
                   }
                   output.end();
                   req.end();
-                  buffer.push(file);
                   if(callback!=null){
                     callback()
                   }
-                  return cb();
                 });
               });
               if (!fs.existsSync(local_path)) {
                 fs.mkdirSync(local_path);
               }
+
               output = fs.createWriteStream(file_name);
               
               req.on('error', function(err) {
@@ -474,7 +480,9 @@ module.exports = {
               });
             });
           });
+          
         }
+
       }), function(cb) {
         if (callback) {
           callback();
