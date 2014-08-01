@@ -104,5 +104,6 @@ transifex.languages(function (data){
 TODO
 ----
 
-* Add local modifications check. If there's no local modifications, don't bother check the file in transifex
+* ~~Add local modifications check. If there's no local modifications, don't bother check the file in transifex~~
 * Add updates check in translation files. If there ain't new translation why download the file.
+* Better division of concerns (Modularize further, separate transform function from stream declarations)
