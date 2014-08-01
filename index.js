@@ -159,7 +159,6 @@ module.exports = {
           }
         });
         res.on('end', function(){
-          languages = languages || '';
           languages = JSON.parse(languages);
           languages = languages.map(function(elm, idx, langs) {
             var langObj = {};
@@ -438,15 +437,22 @@ module.exports = {
             method: 'GET',
             auth: options.user + ':' + options.password
           };
-          languages = _this.languages({use_custom_language_codes:true, language_codes_as_objects:true},function(data) {
+          languages = _this.languages({
+            use_custom_language_codes:options.use_custom_language_codes,
+            language_codes_as_objects:options.language_codes_as_objects
+          },function(data) {
             data.forEach(function(elm, idx, lst) {
-              var file_name, langIso, langCustomCode, local_path, op, output, req;
-              for (k in elm){
-                langIso = k
-                langCustomCode = elm[k]
+              var file_name, langIso, langPath, local_path, op, output, req;
+              if(options.use_custom_language_codes && options.language_codes_as_objects){
+                for (k in elm){
+                  langIso = k
+                  langPath = elm[k]
+                }
+              }else {
+                langIso = langPath = elm;
               }
               op = '';
-              local_path = path.resolve(_this._paths.local_path + '/' + langCustomCode);
+              local_path = path.resolve(_this._paths.local_path + '/' + langPath);
               file_name = local_path + '/' + path.basename(file.path);
               request_options.path = _this._paths.get_or_create_translation({
                 resource: path.basename(file.path, '.po') + 'po',
