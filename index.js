@@ -326,7 +326,6 @@ module.exports = {
           });
         }
       }), function(cb) {
-        console.log(callback.toString());
         if (callback != null) {
 
           callback();
@@ -337,7 +336,6 @@ module.exports = {
     this.createNewResource = function(callback) {
       var buffer;
       return buffer = through.obj((function(file, enc, cb) {
-              console.log("creating: ", file.path);
               buffer.setMaxListeners(0);
               var data, req, request_options;
               if (file.isNull() || file.isDirectory()) {
@@ -442,7 +440,6 @@ module.exports = {
           languages = _this.languages({use_custom_language_codes:true, language_codes_as_objects:true},function(data) {
             data.forEach(function(elm, idx, lst) {
               var file_name, langIso, langCustomCode, local_path, op, output, req;
-              console.log(elm)
               for (k in elm){
                 langIso = k
                 langCustomCode = elm[k]
@@ -454,8 +451,7 @@ module.exports = {
                 resource: path.basename(file.path, '.po') + 'po',
                 language: langIso
               });
-              console.log(local_path);
-              console.log(request_options.path)
+              
               req = httpClient.get(request_options, function(res) {
                 gutil.log(chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path)));
                 
