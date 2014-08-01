@@ -10,7 +10,8 @@ util = require('util');
 fs = require('fs');
 paths = require('./libs/paths.js');
 httpClient = require('http');
-async = require('async');
+async = require('async'),
+mkdirp = require('mkdirp');
 
 module.exports = {
   createClient: function(options) {
@@ -437,6 +438,7 @@ module.exports = {
             method: 'GET',
             auth: options.user + ':' + options.password
           };
+
           languages = _this.languages({
             use_custom_language_codes:options.use_custom_language_codes,
             language_codes_as_objects:options.language_codes_as_objects
@@ -448,11 +450,11 @@ module.exports = {
                   langIso = k
                   langPath = elm[k]
                 }
-              }else {
-                langIso = langPath = elm;
+              } else {
+                langIso = langPath = elm;  
               }
               op = '';
-              local_path = path.resolve(_this._paths.local_path + '/' + langPath);
+              local_path = '.'+path.resolve(_this._paths.local_path + '/' + langPath);
               file_name = local_path + '/' + path.basename(file.path);
               request_options.path = _this._paths.get_or_create_translation({
                 resource: path.basename(file.path, '.po') + 'po',
@@ -461,7 +463,7 @@ module.exports = {
               
               req = httpClient.get(request_options, function(res) {
                 gutil.log(chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path)));
-                
+
                 res.on('data', function(data) {
                   if (parseInt(res.statusCode) !== 200) {
                     if (parseInt(res.statusCode) === 404) {
@@ -500,7 +502,7 @@ module.exports = {
                 });
               });
               if (!fs.existsSync(local_path)) {
-                fs.mkdirSync(local_path);
+                mkdirp.sync(local_path);
               }
 
               output = fs.createWriteStream(file_name);
