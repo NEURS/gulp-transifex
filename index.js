@@ -166,7 +166,7 @@ module.exports = {
             if(options.custom_language_codes && options.custom_language_codes[elm.language_code] && options.use_custom_language_codes){
               if(options.language_codes_as_objects){
                 isoCode = elm.language_code
-                customCode = options.custom_language_codes[elm.language_code]
+                customCode = options.custom_language_codes[elm.language_code] || elm.language_code
                 langObj[isoCode] = customCode
                 return langObj
               }
