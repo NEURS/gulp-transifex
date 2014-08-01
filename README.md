@@ -27,10 +27,21 @@ var options = {
 Using Custom Language Codes
 ---------------------------
 
-Transifex uses ISO 639-1 to code languages. If you want to use your custom language code (another standard or just map es to Klingon) use the `custom_language_codes` option with `use_custom_language_codes` set to true.
+Transifex uses ISO 639-1 to code languages. If you want to use your custom language code (another standard or just map `es` to Klingon) use the `custom_language_codes` option with `use_custom_language_codes` set to `true`.
 
 ###`language_codes_as_objects`
-the `languages()` function returns a list of language codes
+By default the `languages()` function returns an array of strings with the language codes. If you specify `custom_language_codes` _AND_ `use_custom_language_codes` is set to true, it will return an array of strings with your own custom codes.
+Additionally, if `language_codes_as_objects` is set to `true` it will return an array of object in the form:
+
+```javascript
+[
+    {
+        <ISO 639-1 language code>:<custom language code>
+    },
+    ...
+]
+```
+
 
 Uploading Resource files:
 -------------------------
