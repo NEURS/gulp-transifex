@@ -15,9 +15,22 @@ var options = {
     user: <String required. Transifex username>,
     password: <String required. Transifex Password>,
     project: <String required. Transifex project's name>,
-    local_path: <String optional. Local root path for the translations>
+    local_path: <String optional. Local root path for the translations>,
+    custom_language_codes:{
+        <ISO 639-1 language code>:<custom language code>
+    },
+    use_custom_language_codes:<Boolean>,
+    language_codes_as_objects:<Boolean>
 }
 ```
+
+Using Custom Language Codes
+---------------------------
+
+Transifex uses ISO 639-1 to code languages. If you want to use your custom language code (another standard or just map es to Klingon) use the `custom_language_codes` option with `use_custom_language_codes` set to true.
+
+###`language_codes_as_objects`
+the `languages()` function returns a list of language codes
 
 Uploading Resource files:
 -------------------------
