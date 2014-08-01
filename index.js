@@ -159,6 +159,7 @@ module.exports = {
           }
         });
         res.on('end', function(){
+          languages = languages || '';
           languages = JSON.parse(languages);
           languages = languages.map(function(elm, idx, langs) {
             var langObj = {};
