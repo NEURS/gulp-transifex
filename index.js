@@ -37,7 +37,7 @@ module.exports = {
         });
         res.on('end', function () {
           try {
-            callback(results);
+            callback(JSON.parse(results));
           } catch (err) {
             callback(err)
           }
@@ -123,8 +123,18 @@ module.exports = {
       })
     }
 
-    this.languages = function(callback) {
+    this.languages = function(opt, callback) {
       var req, request_options;
+      if(typeof opt == "function"){
+        if(callback == null) {
+          callback = opt;
+        }
+        opt = {
+          use_custom_language_codes:false,
+          language_codes_as_objects:false
+        }
+      }
+      options = util._extend(options, opt)
       request_options = {
         host: _this._paths.host,
         port: '80',
@@ -141,8 +151,7 @@ module.exports = {
         password: options.password
       }, function(res) {
          var languages = '';
-        res.on('data', function(data) {
-          
+         res.on('data', function(data) {
           if (parseInt(res.statusCode) === 200) {
             languages += data.toString('utf8')
           } else {
@@ -152,9 +161,20 @@ module.exports = {
         res.on('end', function(){
           languages = JSON.parse(languages);
           languages = languages.map(function(elm, idx, langs) {
-              return elm.language_code;
-            });
-            callback(languages);
+            var langObj = {};
+            if(options.custom_language_codes && options.custom_language_codes[elm.language_code] && options.use_custom_language_codes){
+              if(options.language_codes_as_objects){
+                isoCode = elm.language_code
+                customCode = options.custom_language_codes[elm.language_code]
+                langObj[isoCode] = customCode
+                return langObj
+              }
+              return options.custom_language_codes[elm.language_code];
+            }else {
+              return elm.language_code
+            }
+          });
+          callback(languages);
         })
       });
       
@@ -284,6 +304,9 @@ module.exports = {
                     }
                   }
                   gutil.log(msg);
+                  if(callback!=null){
+                    callback()
+                  }
                 });
                 
                 req.on('error', function(err) {
@@ -304,6 +327,7 @@ module.exports = {
         }
       }), function(cb) {
         if (callback != null) {
+
           callback();
         }
         cb();
@@ -312,7 +336,6 @@ module.exports = {
     this.createNewResource = function(callback) {
       var buffer;
       return buffer = through.obj((function(file, enc, cb) {
-              console.log("creating: ", file.path);
               buffer.setMaxListeners(0);
               var data, req, request_options;
               if (file.isNull() || file.isDirectory()) {
@@ -414,17 +437,28 @@ module.exports = {
             method: 'GET',
             auth: options.user + ':' + options.password
           };
-          languages = _this.languages(function(data) {
+          languages = _this.languages({
+            use_custom_language_codes:options.use_custom_language_codes,
+            language_codes_as_objects:options.language_codes_as_objects
+          },function(data) {
             data.forEach(function(elm, idx, lst) {
-              var file_name, local_path, op, output, req;
-              
+              var file_name, langIso, langPath, local_path, op, output, req;
+              if(options.use_custom_language_codes && options.language_codes_as_objects){
+                for (k in elm){
+                  langIso = k
+                  langPath = elm[k]
+                }
+              }else {
+                langIso = langPath = elm;
+              }
               op = '';
-              local_path = path.resolve(_this._paths.local_path + '/' + elm);
+              local_path = path.resolve(_this._paths.local_path + '/' + langPath);
               file_name = local_path + '/' + path.basename(file.path);
               request_options.path = _this._paths.get_or_create_translation({
                 resource: path.basename(file.path, '.po') + 'po',
-                language: elm
+                language: langIso
               });
+              
               req = httpClient.get(request_options, function(res) {
                 gutil.log(chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path)));
                 
