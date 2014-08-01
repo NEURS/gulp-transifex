@@ -454,7 +454,21 @@ module.exports = {
                 langIso = langPath = elm;  
               }
               op = '';
-              local_path = '.'+path.resolve(_this._paths.local_path + '/' + langPath);
+              local_path = _this._paths.local_path.split('*');
+              console.log(local_path.length);
+              if(local_path.length > 1 && local_path.length < 3) {
+                local_path = sprintf('./%(language_root)s/%(language)s/%(language_tail)s/', {
+                  language_root: local_path[0],
+                  language: langPath,
+                  language_tail:local_path[1]
+                });
+              } else {
+                local_path = sprintf('./%(language_root)s/%(language)s/', {
+                  language_root: local_path[0],
+                  language: langPath
+                });
+              }
+              local_path = path.resolve(local_path);
               file_name = local_path + '/' + path.basename(file.path);
               request_options.path = _this._paths.get_or_create_translation({
                 resource: path.basename(file.path, '.po') + 'po',
