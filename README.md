@@ -30,7 +30,7 @@ Using Custom Language Codes
 Transifex uses ISO 639-1 to code languages. If you want to use your custom language code (another standard or just map `es` to Klingon) use the `custom_language_codes` option with `use_custom_language_codes` set to `true`.
 
 ###`language_codes_as_objects`
-By default the `languages()` function returns an array of strings with the language codes. If you specify `custom_language_codes` _AND_ `use_custom_language_codes` is set to true, it will return an array of strings with your own custom codes.
+By default the `languages()` method returns an array of strings with the language codes. If you specify `custom_language_codes` _AND_ `use_custom_language_codes` is set to true, it will return an array of strings with your own custom codes.
 Additionally, if `language_codes_as_objects` is set to `true` it will return an array of object in the form:
 
 ```javascript
@@ -77,26 +77,26 @@ Other methods exposed
 
 There are other methods exposed that doesn't return streams but accepts callbacks:
 
-###get_resources()
+###resources()
 
 Gets an array of resources in the project
 
 ```javascript
 var transifex = require('transifex').createClient(options)
 
-transifex.get_resources(function(data){
+transifex.resources(function(data){
     ...
 })
 ```
 
-###get_languages()
+###languages()
 
 Gets an array of language codes in the project
 
 ```javascript
 var transifex = require('transifex').createClient(options)
 
-transifex.get_languages(function (data){
+transifex.languages(function (data){
     ...
 })
 ```
