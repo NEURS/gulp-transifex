@@ -15,9 +15,33 @@ var options = {
     user: <String required. Transifex username>,
     password: <String required. Transifex Password>,
     project: <String required. Transifex project's name>,
-    local_path: <String optional. Local root path for the translations>
+    local_path: <String optional. Local root path for the translations>,
+    custom_language_codes:{
+        <ISO 639-1 language code>:<custom language code>
+    },
+    use_custom_language_codes:<Boolean>,
+    language_codes_as_objects:<Boolean>
 }
 ```
+
+Using Custom Language Codes
+---------------------------
+
+Transifex uses ISO 639-1 to code languages. If you want to use your custom language code (another standard or just map `es` to Klingon) use the `custom_language_codes` option with `use_custom_language_codes` set to `true`.
+
+###`language_codes_as_objects`
+By default the `languages()` method returns an array of strings with the language codes. If you specify `custom_language_codes` _AND_ `use_custom_language_codes` is set to true, it will return an array of strings with your own custom codes.
+Additionally, if `language_codes_as_objects` is set to `true` it will return an array of object in the form:
+
+```javascript
+[
+    {
+        <ISO 639-1 language code>:<custom language code>
+    },
+    ...
+]
+```
+
 
 Uploading Resource files:
 -------------------------
@@ -53,26 +77,26 @@ Other methods exposed
 
 There are other methods exposed that doesn't return streams but accepts callbacks:
 
-###get_resources()
+###resources()
 
 Gets an array of resources in the project
 
 ```javascript
 var transifex = require('transifex').createClient(options)
 
-transifex.get_resources(function(data){
+transifex.resources(function(data){
     ...
 })
 ```
 
-###get_languages()
+###languages()
 
 Gets an array of language codes in the project
 
 ```javascript
 var transifex = require('transifex').createClient(options)
 
-transifex.get_languages(function (data){
+transifex.languages(function (data){
     ...
 })
 ```
@@ -80,5 +104,6 @@ transifex.get_languages(function (data){
 TODO
 ----
 
-* Add local modifications check. If there's no local modifications, don't bother check the file in transifex
+* ~~Add local modifications check. If there's no local modifications, don't bother check the file in transifex~~
 * Add updates check in translation files. If there ain't new translation why download the file.
+* Better division of concerns (Modularize further, separate transform function from stream declarations)
