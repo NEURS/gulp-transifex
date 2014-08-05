@@ -33,7 +33,7 @@ module.exports = {
           if (parseInt(res.statusCode) === 200) {
             results += data.toString();
           } else {
-            req.emit('error in resources()', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
+            req.emit('error', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
           }
         });
         res.on('end', function () {
@@ -46,7 +46,10 @@ module.exports = {
       });
       
       req.on('error', function(err) {
-        console.log(chalk.red(err));
+        throw new gutil.PluginError ({
+          plugin: "gulp-transifex",
+          message: chalk.red(err)
+        });
       });
     };
 
@@ -67,7 +70,7 @@ module.exports = {
               attrs = '{}'
               req.end();
             }else{
-              req.emit('error in resources()', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
+              req.emit('error', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
             }
           }else{
             attrs += data.toString('utf8');
@@ -79,14 +82,14 @@ module.exports = {
           if(attrs){
             callback(JSON.parse(attrs));
           }else{
-            req.emit('error in resources()', new Error("Invalid data"));
+            req.emit('error', new Error("Invalid data"));
           }
           return attrs;
         });
       });
 
       req.on('error', function(err){
-        buffer.emit('Error checking a resource: ', new gutil.PluginError({
+        buffer.emit('error', new gutil.PluginError({
             plugin: 'gulp-transifex',
             message: "Invalid data"
           }));
@@ -156,11 +159,22 @@ module.exports = {
           if (parseInt(res.statusCode) === 200) {
             languages += data.toString('utf8')
           } else {
-            req.emit('error in languages()', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
+            req.emit('error', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
           }
         });
+        res.on('error', function (err) {
+          throw new gutil.PluginError({
+            plugin: 'gulp-transifex',
+            message: err.message
+          })
+        });
         res.on('end', function(){
-          languages = JSON.parse(languages);
+          try {
+            languages = JSON.parse(languages);
+          } catch (err) {
+            res.emit('error', err);
+          }
+          
           languages = languages.map(function(elm, idx, langs) {
             var langObj = {};
             if(options.custom_language_codes && options.custom_language_codes[elm.language_code] && options.use_custom_language_codes){
@@ -180,7 +194,10 @@ module.exports = {
       });
       
       req.on('error', function(err) {
-        console.log(chalk.red(err));
+        throw new gutil.PluginError({
+            plugin: 'gulp-transifex',
+            message: err.message
+          })
       });
       
       req.end();
@@ -328,7 +345,6 @@ module.exports = {
         }
       }), function(cb) {
         if (callback != null) {
-
           callback();
         }
         cb();
@@ -416,7 +432,7 @@ module.exports = {
         var languages, request_options;
         
         if (file.isNull()) {
-          buffer.emit('error downloading a translation', new gutil.PluginError({
+          buffer.emit('error', new gutil.PluginError({
             plugin: 'gulp-transifex',
             message: "Null files are not supported"
           }));
@@ -424,7 +440,7 @@ module.exports = {
           return;
         }
         if (file.isStream()) {
-          buffer.emit('error downloading a translation', new gutil.PluginError({
+          buffer.emit('error', new gutil.PluginError({
             plugin: 'gulp-transifex',
             message: "Streams not supported"
           }));
@@ -455,7 +471,6 @@ module.exports = {
               }
               op = '';
               local_path = _this._paths.local_path.split('*');
-              console.log(local_path.length);
               if(local_path.length > 1 && local_path.length < 3) {
                 local_path = sprintf('./%(language_root)s/%(language)s/%(language_tail)s/', {
                   language_root: local_path[0],
@@ -485,7 +500,7 @@ module.exports = {
                       buffer.push(file);
                       return cb();
                     } else {
-                      buffer.emit('error downloading a translation', new gutil.PluginError({
+                      buffer.emit('error', new gutil.PluginError({
                         plugin: 'gulp-transifex',
                         message: res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]
                       }));
@@ -503,7 +518,7 @@ module.exports = {
                     cb();
                   } catch (e) {
                     output.end();
-                    buffer.emit('error downloading a translation', new gutil.PluginError({
+                    buffer.emit('error', new gutil.PluginError({
                         plugin: 'gulp-transifex',
                         message: res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]
                       }));
@@ -522,7 +537,7 @@ module.exports = {
               output = fs.createWriteStream(file_name);
               
               req.on('error', function(err) {
-                return buffer.emit('error error downloading a translation', new gutil.PluginError({
+                return buffer.emit('error', new gutil.PluginError({
                   plugin: 'gulp-transifex',
                   message: err,
                   fileName: file.path
