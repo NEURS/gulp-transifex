@@ -46,7 +46,10 @@ module.exports = {
       });
       
       req.on('error', function(err) {
-        console.log(chalk.red(err));
+        throw new gutil.PluginError ({
+          plugin: "gulp-transifex",
+          message: chalk.red(err)
+        });
       });
     };
 
@@ -468,7 +471,6 @@ module.exports = {
               }
               op = '';
               local_path = _this._paths.local_path.split('*');
-              console.log(local_path.length);
               if(local_path.length > 1 && local_path.length < 3) {
                 local_path = sprintf('./%(language_root)s/%(language)s/%(language_tail)s/', {
                   language_root: local_path[0],
