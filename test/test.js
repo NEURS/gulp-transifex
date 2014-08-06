@@ -50,34 +50,30 @@ describe('Transifex', function(){
         var client = transifex.createClient(options);
         client.resources(function(data) {
           data.should.be.an.Array
-          console.log(data);
           done()
         })
       });
     });
   
     describe('#listLanguages()', function(){
-        it('should return the data 1', function(done) {
+        it('should return the languages with default options as an array of strings', function(done) {
             var client = transifex.createClient(options);
             client.languages(function(data){
                 data.should.be.an.Array
-                console.log(data);
                 done()
             })
         });
-        it('should return the data 2', function(done) {
+        it('should return the data as an array of strings with the use_custom_language_codes set to true', function(done) {
             var client = transifex.createClient(options);
             client.languages({use_custom_language_codes:true}, function(data){
                 data.should.be.an.Array
-                console.log(data);
                 done()
             })
         });
-        it('should return the data 3', function(done) {
+        it('should return the data as an array of objects with the use_custom_language_codes and language_codes_as_objects', function(done) {
             var client = transifex.createClient(options);
             client.languages({use_custom_language_codes:true, language_codes_as_objects:true}, function(data){
                 data.should.be.an.Array
-                console.log(data);
                 done()
             })
         });
@@ -93,7 +89,7 @@ describe('Transifex', function(){
                 stat: fs.statSync(path.resolve(__dirname, '../fixture.po'))
             });
             client.pushResource(function(data) {
-                return done();
+                done();
             }).write(file);
         });
 
