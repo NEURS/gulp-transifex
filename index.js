@@ -89,7 +89,7 @@ module.exports = {
       });
 
       req.on('error', function(err){
-        buffer.emit('error', new gutil.PluginError({
+        req.emit('error', new gutil.PluginError({
             plugin: 'gulp-transifex',
             message: "Invalid data"
           }));
