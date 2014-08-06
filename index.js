@@ -264,7 +264,7 @@ module.exports = {
                     msg = chalk.green('✔ ') + chalk.magenta(path.basename(file.path)) + chalk.blue(' Uploaded successful');
                     cb();
                   } else {
-                    if (parseInt(res.statusCode) === 404 || parseInt(res.statusCode) === 400) {
+                    if (parseInt(res.statusCode) === 404) {
                       data = {
                         content: file.contents.toString('utf8'),
                         name:path.basename(file.path),
