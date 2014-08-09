@@ -20,6 +20,18 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
+#: actionlog/templates/object_action_list.html:8
+msgid "Passion"
+msgstr ""
+
+#: actionlog/templates/object_action_list.html:8
+msgid "Friction"
+msgstr ""
+
+#: actionlog/templates/object_action_list.html:8
+msgid "Inertia"
+msgstr ""
+
 #: foo/templates/bar.html:180
 msgid "{0} result"
 msgid_plural "{0} results"
