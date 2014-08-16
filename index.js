@@ -33,7 +33,7 @@ module.exports = {
 					if (parseInt(res.statusCode) === 200) {
 						results += data.toString();
 					} else {
-						req.emit('error', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode]));
+						req.emit('error', new Error(res.statusCode + ": " + httpClient.STATUS_CODES[res.statusCode] + " reaching the project"));
 					}
 				});
 				res.on('end', function () {
@@ -65,7 +65,7 @@ module.exports = {
 
 				res.on('data', function (data) {
 
-					if (parseInt(res.statusCode) !== 200) {
+					if (parseInt(res.statusCode) < 200 && parseInt(res.statusCode)>=400) {
 						if (parseInt(res.statusCode) === 404){
 							attrs = '{}'
 							req.end();
@@ -223,7 +223,6 @@ module.exports = {
 				if (file.isBuffer() && path.extname(file.path) === '.po') {
 					async.series([
 						function (cbSync) {
-							console.log("Checkint file")
 							_this.isNewer(file, function (results) {
 								isNewer = results
 								cbSync();
@@ -257,10 +256,11 @@ module.exports = {
 
 								msg = '';
 								req.on('response', function (res) {
-									if (parseInt(res.statusCode) === 200) {
-										msg = chalk.green('✔ ') + chalk.magenta(path.basename(file.path)) + chalk.blue(' Uploaded successful');
-									} else {
+
+									if (parseInt(res.statusCode) < 200 || parseInt(res.statusCode) >= 400) {
+
 										if (parseInt(res.statusCode) === 404) {
+
 											data = {
 												content: file.contents.toString('utf8'),
 												name:path.basename(file.path),
@@ -288,6 +288,9 @@ module.exports = {
 												if (parseInt(res.statusCode) === 201) {
 													msg = chalk.green('✔ ') + chalk.blue('Upload successful');
 												} else {
+													gutil.log(req2.statusCode);
+													gutil.log(req2._headers.host);
+													gutil.log(req2._header);
 													msg = chalk.red('✘ ') + chalk.white('Error creating new resource ') +chalk.magenta(path.basename(file.path)) + ': ' + chalk.white(httpClient.STATUS_CODES[res.statusCode]);
 													req2.emit('Error:', new gutil.PluginError({
 														plugin: 'gulp-transifex',
@@ -295,38 +298,60 @@ module.exports = {
 														fileName: file.path
 													}));
 												}
-												req2.emit('end');
-												gutil.log(msg);
+												res.on('close', function () {
+													gutil.log(msg);
+													cbSync();
+												});
 											});
 											req2.on('error', function (err) {
 												req.emit('err');
 											});
-											req2.write(data);
+											req2.end(data);
 										} else {
-											msg = chalk.red('✘ ') + chalk.blue('Error: ' + httpClient.STATUS_CODES[res.statusCode]);
+											gutil.log(res.statusCode);
+											gutil.log(req._headers.host);
+											gutil.log(req._header);
+
+											msg = chalk.red('✘ ') + chalk.blue('Error: ' + httpClient.STATUS_CODES[res.statusCode] + chalk.magenta(" " +path.basename(file.path)));
+											
 											buffer.emit('error in pushResources ', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: msg,
 												fileName: file.path
 											}));
 										}
+									} else {
+										msg = chalk.green('✔ ') + chalk.magenta(path.basename(file.path)) + chalk.blue(' Uploaded successful');
 									}
-									gutil.log(msg);
-									req.emit('end');
+									res.on('data', function (d) {
+										var mod = false;
+
+										results = JSON.parse(d.toString());
+
+										for(i in results) {
+											if (results[i] >0) {
+												mod = true;
+
+												gutil.log(chalk.blue(i) + chalk.green(i))
+											}
+										}
+										if (!mod) {
+											gutil.log(chalk.blue("no changes done"));
+										}
+
+										gutil.log(msg);
+										cbSync();
+									});
 								});
-								req.on('end',function () {
-									cbSync();
-								});
+								
 								req.on('error', function (err) {
-									gutil.log(err);
-									req.emit('end');
+									cbSync(err);
 								});
-								req.write(data);
+								req.end(data);
 							}
 						}
 					],
 					function (err, results) {
-						console.log('Fuck this!');
 						if (err) {
 							gutil.log(chalk.red(err))
 						}
@@ -334,10 +359,10 @@ module.exports = {
 						if (callback != null) {
 							callback();
 						}
+						cb();
 					});
 				}
 			}), function (cb) {
-				console.log('Fuck you!');
 				cb();
 			});
 		};
@@ -387,6 +412,9 @@ module.exports = {
 									if (parseInt(res.statusCode) === 201) {
 										msg = chalk.green('✔ ') + chalk.blue('Upload successful');
 									} else {
+										gutil.log(req.statusCode);
+										gutil.log(req._headers.host);
+										gutil.log(req._header);
 										msg = chalk.red('✘ ') + chalk.white('Error creating new resource ') +chalk.magenta(path.basename(file.path)) + ': ' + chalk.white(httpClient.STATUS_CODES[res.statusCode]);
 										buffer.emit('', new gutil.PluginError({
 											plugin: 'gulp-transifex',
@@ -458,7 +486,7 @@ module.exports = {
 									}
 
 								} else {
-									langIso = langPath = elm;
+									langIso = langPath = elm;  
 								}
 
 								op = '';
@@ -494,6 +522,9 @@ module.exports = {
 											gutil.log(chalk.red('✘ ') + chalk.blue(request_options.path) + chalk.white("Does not exist"));
 											cbSync();
 										} else {
+											gulp.log(req.statusCode);
+											gulp.log(req._headers.host);
+											gulp.log(req._header);
 											res.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: res.statusCode + "in pullResource()[data]: " + httpClient.STATUS_CODES[res.statusCode]
@@ -534,7 +565,6 @@ module.exports = {
 								cbSync(err);
 							});
 							req.on('end', function () {
-								console.log('ends')
 								cbSync();
 							})
 						}, function (res, err) {
