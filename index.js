@@ -440,10 +440,10 @@ module.exports = {
 				cb();
 			});
 		};
-		this.pullResource = function (callback) {
+		this.pullResource = function(callback) {
 			var buffer;
 
-			return buffer = through.obj((function (file, enc, cb) {
+			return buffer = through.obj((function(file, enc, cb) {
 				var languages, request_options;
 
 				if (file.isNull()) {
@@ -454,6 +454,7 @@ module.exports = {
 					cb();
 					return;
 				}
+
 				if (file.isStream()) {
 					buffer.emit('error', new gutil.PluginError({
 						plugin: 'gulp-transifex',
@@ -462,6 +463,7 @@ module.exports = {
 					cb();
 					return;
 				}
+
 				if (file.isBuffer() && path.extname(file.path) === '.po') {
 					request_options = {
 						host: _this._paths.host,
@@ -473,58 +475,55 @@ module.exports = {
 					languages = _this.languages({
 						use_custom_language_codes:options.use_custom_language_codes,
 						language_codes_as_objects:options.language_codes_as_objects
-					},function (data) {
-						async.each(data,
-							function (elm, cbSync) {
-								var file_name, langIso, langPath, local_path, op, output, req;
+					},function(data) {
+						data.forEach(function(elm, idx, lst) {
+							var file_name, langIso, langPath, local_path, op, output, req;
 
-								if (options.use_custom_language_codes && options.language_codes_as_objects) {
-
-									for (k in elm){
-										langIso = k
-										langPath = elm[k]
-									}
-
-								} else {
-									langIso = langPath = elm;  
+							if (options.use_custom_language_codes && options.language_codes_as_objects) {
+								
+								for (k in elm){
+									langIso = k
+									langPath = elm[k]
 								}
 
-								op = '';
-								local_path = _this._paths.local_path.split('*');
+							} else {
+								langIso = langPath = elm;  
+							}
 
-								if (local_path.length > 1 && local_path.length < 3) {
-									local_path = sprintf('./%(language_root)s/%(language)s/%(language_tail)s/', {
-										language_root: local_path[0],
-										language: langPath,
-										language_tail:local_path[1]
-									});
-								} else {
-									local_path = sprintf('./%(language_root)s/%(language)s/', {
-										language_root: local_path[0],
-										language: langPath
-									});
-								}
+							op = '';
+							local_path = _this._paths.local_path.split('*');
 
-								local_path = path.resolve(local_path);
-								file_name = local_path + '/' + path.basename(file.path);
-
-								request_options.path = _this._paths.get_or_create_translation({
-									resource: path.basename(file.path, '.po') + 'po',
-									language: langIso
+							if(local_path.length > 1 && local_path.length < 3) {
+								local_path = sprintf('./%(language_root)s/%(language)s/%(language_tail)s/', {
+									language_root: local_path[0],
+									language: langPath,
+									language_tail:local_path[1]
 								});
+							} else {
+								local_path = sprintf('./%(language_root)s/%(language)s/', {
+									language_root: local_path[0],
+									language: langPath
+								});
+							}
 
-								req = httpClient.get(request_options, function (res) {
+							local_path = path.resolve(local_path);
+							file_name = local_path + '/' + path.basename(file.path);
+							
+							request_options.path = _this._paths.get_or_create_translation({
+								resource: path.basename(file.path, '.po') + 'po',
+								language: langIso
+							});
+
+							req = httpClient.get(request_options, function(res) {
 								gutil.log(chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path)));
 
-								res.on('data', function (data) {
+								res.on('data', function(data) {
 									if (parseInt(res.statusCode) !== 200) {
 										if (parseInt(res.statusCode) === 404) {
 											gutil.log(chalk.red('✘ ') + chalk.blue(request_options.path) + chalk.white("Does not exist"));
-											cbSync();
+											buffer.push(file);
+											return cb();
 										} else {
-											gulp.log(req.statusCode);
-											gulp.log(req._headers.host);
-											gulp.log(req._header);
 											res.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: res.statusCode + "in pullResource()[data]: " + httpClient.STATUS_CODES[res.statusCode]
@@ -534,24 +533,28 @@ module.exports = {
 									op += data;
 								});
 
-								res.on('error', function (err) {
+								res.on('error', function(err) {
 									gutil.log(err)
-									cbSync(err);
 								});
 
-								res.on('end', function () {
-									gutil.log(chalk.green('✔ ') + chalk.blue(path.basename(file.path)) + chalk.white(' Downloaded'));
+								res.on('end', function() {
+									gutil.log(chalk.green('✔ ') + chalk.blue(path.basename(file.path))) + chalk.white('Downloaded: ');
 									try {
 										data = JSON.parse(op).content;
 										output.write(data);
-										output.emit('end');
-										req.emit('end');
+										buffer.push(file);
+										cb();
 									} catch (e) {
 										output.end();
 										res.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: res.statusCode + " in pullResource()[end]: " + httpClient.STATUS_CODES[res.statusCode]
 											}));
+									}
+									output.end();
+									req.end();
+									if(callback!=null){
+										callback()
 									}
 								});
 							});
@@ -560,27 +563,18 @@ module.exports = {
 							}
 
 							output = fs.createWriteStream(file_name);
-
-							req.on('error', function (err) {
-								cbSync(err);
-							});
-							req.on('end', function () {
-								cbSync();
-							})
-						}, function (res, err) {
-							if (err) {
+							
+							req.on('error', function(err) {
 								gutil.log(err);
-							}
-							buffer.push(file);
-							if (callback!=null) {
-								callback()
-							}
+								buffer.push(file);
+								cb();
+							});
 						});
 					});
-
+					
 				}
 
-			}), function (cb) {
+			}), function(cb) {
 				if (callback) {
 					callback();
 				}
