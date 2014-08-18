@@ -442,10 +442,10 @@ module.exports = {
 		};
 		this.pullResource = function(callback) {
 			var buffer;
-			
+
 			return buffer = through.obj((function(file, enc, cb) {
 				var languages, request_options;
-				
+
 				if (file.isNull()) {
 					buffer.emit('error', new gutil.PluginError({
 						plugin: 'gulp-transifex',
@@ -454,6 +454,7 @@ module.exports = {
 					cb();
 					return;
 				}
+
 				if (file.isStream()) {
 					buffer.emit('error', new gutil.PluginError({
 						plugin: 'gulp-transifex',
@@ -462,6 +463,7 @@ module.exports = {
 					cb();
 					return;
 				}
+
 				if (file.isBuffer() && path.extname(file.path) === '.po') {
 					request_options = {
 						host: _this._paths.host,
@@ -487,10 +489,10 @@ module.exports = {
 							} else {
 								langIso = langPath = elm;  
 							}
-							
+
 							op = '';
 							local_path = _this._paths.local_path.split('*');
-							
+
 							if(local_path.length > 1 && local_path.length < 3) {
 								local_path = sprintf('./%(language_root)s/%(language)s/%(language_tail)s/', {
 									language_root: local_path[0],
@@ -503,7 +505,7 @@ module.exports = {
 									language: langPath
 								});
 							}
-							
+
 							local_path = path.resolve(local_path);
 							file_name = local_path + '/' + path.basename(file.path);
 							
@@ -511,7 +513,7 @@ module.exports = {
 								resource: path.basename(file.path, '.po') + 'po',
 								language: langIso
 							});
-							
+
 							req = httpClient.get(request_options, function(res) {
 								gutil.log(chalk.white('Downloading file: ') + chalk.blue(path.basename(file.path)));
 
@@ -530,7 +532,7 @@ module.exports = {
 									}
 									op += data;
 								});
-								
+
 								res.on('error', function(err) {
 									gutil.log(err)
 								});
