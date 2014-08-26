@@ -64,8 +64,7 @@ module.exports = {
 			}, function (res) {
 
 				res.on('data', function (data) {
-
-					if (parseInt(res.statusCode) < 200 && parseInt(res.statusCode)>=400) {
+					if (parseInt(res.statusCode) < 200 || parseInt(res.statusCode)>=400) {
 						if (parseInt(res.statusCode) === 404){
 							attrs = '{}'
 							req.end();
@@ -320,12 +319,15 @@ module.exports = {
 												fileName: file.path
 											}));
 										}
+										res.on('data', function (d) {
+											cbSync();
+										})
+										return;
 									} else {
 										msg = chalk.green('✔ ') + chalk.magenta(path.basename(file.path)) + chalk.blue(' Uploaded successful');
 									}
 									res.on('data', function (d) {
 										var mod = false;
-
 										results = JSON.parse(d.toString());
 
 										for(i in results) {
