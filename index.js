@@ -312,7 +312,7 @@ module.exports = {
 											gutil.log(req._header);
 
 											msg = chalk.red('✘ ') + chalk.blue('Error: ' + httpClient.STATUS_CODES[res.statusCode] + chalk.magenta(" " +path.basename(file.path)));
-											
+
 											buffer.emit('error in pushResources ', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: msg,
@@ -345,7 +345,7 @@ module.exports = {
 										cbSync();
 									});
 								});
-								
+
 								req.on('error', function (err) {
 									cbSync(err);
 								});
@@ -466,7 +466,7 @@ module.exports = {
 					return;
 				}
 
-				if (file.isBuffer() && path.extname(file.path) === '.po') {
+				if (file.isBuffer()) {
 					request_options = {
 						host: _this._paths.host,
 						port: '80',
@@ -482,14 +482,14 @@ module.exports = {
 							var file_name, langIso, langPath, local_path, op, output, req;
 
 							if (options.use_custom_language_codes && options.language_codes_as_objects) {
-								
+
 								for (k in elm){
 									langIso = k
 									langPath = elm[k]
 								}
 
 							} else {
-								langIso = langPath = elm;  
+								langIso = langPath = elm;
 							}
 
 							op = '';
@@ -508,11 +508,8 @@ module.exports = {
 								});
 							}
 
-							local_path = path.resolve(local_path);
-							file_name = local_path + '/' + path.basename(file.path);
-							
 							request_options.path = _this._paths.get_or_create_translation({
-								resource: path.basename(file.path, '.po') + 'po',
+								resource: path.basename(file.path).replace(/[^a-z0-9_-]/ig, ''),
 								language: langIso
 							});
 
@@ -560,12 +557,16 @@ module.exports = {
 									}
 								});
 							});
+
+							local_path = path.resolve(local_path);
+							file_name    = local_path + '/' + path.basename(file.path).replace('.pot', '.po');
+
 							if (!fs.existsSync(local_path)) {
 								mkdirp.sync(local_path);
 							}
 
 							output = fs.createWriteStream(file_name);
-							
+
 							req.on('error', function(err) {
 								gutil.log(err);
 								buffer.push(file);
@@ -573,7 +574,7 @@ module.exports = {
 							});
 						});
 					});
-					
+
 				}
 
 			}), function(cb) {
