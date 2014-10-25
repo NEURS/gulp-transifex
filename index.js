@@ -541,8 +541,8 @@ module.exports = {
 									try {
 										data = JSON.parse(op).content;
 										output.write(data);
+										output.end();
 										buffer.push(file);
-										cb();
 									} catch (e) {
 										output.end();
 										res.emit('error', new gutil.PluginError({
@@ -550,11 +550,15 @@ module.exports = {
 												message: res.statusCode + " in pullResource()[end]: " + httpClient.STATUS_CODES[res.statusCode]
 											}));
 									}
-									output.end();
 									req.end();
-									if(callback!=null){
-										callback()
-									}
+
+									output.on('finish', function () {
+										setTimeout(cb, 500);
+
+										if(callback!=null){
+											callback()
+										}
+									});
 								});
 							});
 
