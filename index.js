@@ -398,7 +398,7 @@ module.exports = {
 
 						buffer.push(file);
 
-						if (callback !== null) {
+						if (callback) {
 							callback();
 						}
 
@@ -609,7 +609,7 @@ module.exports = {
 									output.on('finish', function () {
 										setTimeout(cb, 500);
 
-										if (callback !== null) {
+										if (callback) {
 											callback();
 										}
 									});
