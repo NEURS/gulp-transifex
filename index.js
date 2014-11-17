@@ -240,7 +240,7 @@ module.exports = {
 									port: '80',
 									path: _this._paths.update_resource({
 										project: options.project,
-										resource: path.basename(file.path, '.po') + 'po'
+										resource: path.basename(file.path).replace(/[^a-z0-9_-]/ig, '').replace(path.extname(file.path), '')
 									}),
 									method: 'PUT',
 									auth: options.user + ':' + options.password,
@@ -509,7 +509,7 @@ module.exports = {
 							}
 
 							request_options.path = _this._paths.get_or_create_translation({
-								resource: path.basename(file.path).replace(/[^a-z0-9_-]/ig, ''),
+								resource: path.basename(file.path).replace(/[^a-z0-9_-]/ig, '').replace(path.extname(file.path), ''),
 								language: langIso
 							});
 
