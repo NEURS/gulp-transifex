@@ -428,13 +428,13 @@ module.exports = {
 					cb();
 					return;
 				}
-				if (file.isBuffer() && path.extname(file.path) === '.po') {
+				if (file.isBuffer()) {
 
 					data = {
 						content: file.contents.toString('utf8'),
 						name: path.basename(file.path),
-						slug: path.basename(file.path, '.po') + 'po',
-						i18n_type: 'PO'
+						slug: path.basename(file.path).replace(path.extname(file.path)),
+						i18n_type: options.i18n_type
 					};
 					data = JSON.stringify(data);
 					request_options = {
