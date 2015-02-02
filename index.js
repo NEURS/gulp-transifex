@@ -583,13 +583,13 @@ module.exports = {
 
 								res.on('error', function (err) {
 									gutil.log(err);
+									cb(err);
 								});
 
 								res.on('end', function () {
 									gutil.log(chalk.green('✔ ') +
 										chalk.blue(path.basename(file.path)) +
 										' ' + chalk.white('Downloaded: '));
-
 									try {
 										data = JSON.parse(op).content;
 										output.write(data);
@@ -597,7 +597,7 @@ module.exports = {
 										buffer.push(file);
 									} catch (e) {
 										output.end();
-										res.emit('error', new gutil.PluginError({
+										buffer.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: res.statusCode +
 													' in pullResource()[end]: ' +
@@ -607,11 +607,7 @@ module.exports = {
 									req.end();
 
 									output.on('finish', function () {
-										setTimeout(cb, 500);
-
-										if (callback) {
-											callback();
-										}
+										cb();
 									});
 								});
 							});
