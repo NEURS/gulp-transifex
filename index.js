@@ -523,8 +523,8 @@ module.exports = {
 						use_custom_language_codes:options.use_custom_language_codes,
 						language_codes_as_objects:options.language_codes_as_objects
 					}, function (data) {
-						data.forEach(function (elm) {
-							var k, file_name, langIso, langPath, local_path, op, output, req;
+						async.eachSeries(data, function (elm, callback) {
+							var k, file_name, ext_name, langIso, langPath, local_path, op, output, req;
 
 							if (options.use_custom_language_codes &&
 									options.language_codes_as_objects) {
@@ -569,7 +569,7 @@ module.exports = {
 												chalk.blue(request_options.path) +
 												chalk.white('Does not exist'));
 											buffer.push(file);
-											return cb();
+											return callback();
 										} else {
 											res.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
@@ -583,37 +583,42 @@ module.exports = {
 
 								res.on('error', function (err) {
 									gutil.log(err);
-									cb(err);
+									return callback(err);
 								});
 
 								res.on('end', function () {
+									var data;
+
 									gutil.log(chalk.green('✔ ') +
-										chalk.blue(path.basename(file.path)) +
+										chalk.blue(langIso, path.basename(file.path)) +
 										' ' + chalk.white('Downloaded: '));
 									try {
 										data = JSON.parse(op).content;
 										output.write(data);
 										output.end();
-										buffer.push(file);
 									} catch (e) {
-										output.end();
 										buffer.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: res.statusCode +
 													' in pullResource()[end]: ' +
 													httpClient.STATUS_CODES[res.statusCode]
-											}));
+										}));
+										output.end();
 									}
-									req.end();
 
-									output.on('finish', function () {
-										cb();
-									});
 								});
 							});
 
-							local_path = path.resolve(local_path);
-							file_name    = local_path + '/' + path.basename(file.path);
+							local_path	= path.resolve(local_path);
+							ext_name	= path.extname(file.path);
+							file_name	= path.basename(file.path, ext_name);
+
+
+							if (ext_name === '.pot') {
+								ext_name = '.po';
+							}
+
+							file_name = local_path + '/' + file_name + ext_name;
 
 							if (!fs.existsSync(local_path)) {
 								mkdirp.sync(local_path);
@@ -621,12 +626,19 @@ module.exports = {
 
 							output = fs.createWriteStream(file_name);
 
+							output.on('finish', function () {
+								buffer.push(file);
+								callback();
+							});
+
 							req.on('error', function (err) {
 								gutil.log(err);
 								buffer.push(file);
-								cb();
+								callback(err);
 							});
-						});
+						}, function (err) {
+							cb();
+						})
 					});
 
 				}
