@@ -72,6 +72,26 @@ gulp.task('downstream', function(){
 })
 ```
 
+Chaining Tasks with gulp-transifex
+-----------------------------------
+
+Since this plugins makes remote requests you have to call it asynchronously if you
+need the translation files in next tasks, just return the stream:
+
+```javascript
+var transifex = require('transifex').createClient(options)
+var gulp = require('gulp')
+
+gulp.task('downstream', function(){
+    return gulp.src('path/to/source/language/*')
+        .pipe(transifex.pullResource())
+});
+
+gulp.task('requireTransifexFiles', ['downstream'], function () {
+    ...
+});
+```
+
 Other methods exposed
 ---------------------
 
