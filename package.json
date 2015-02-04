@@ -1,7 +1,7 @@
 {
   "name": "gulp-transifex",
   "description": "Gulp plugin for uploading source languages files to transifex",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "homepage": "https://github.com/NEURS/gulp-transifex/",
   "repository": "https://github.com/NEURS/gulp-transifex.git",
   "keywords": [
