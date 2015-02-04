@@ -523,7 +523,7 @@ module.exports = {
 						use_custom_language_codes:options.use_custom_language_codes,
 						language_codes_as_objects:options.language_codes_as_objects
 					}, function (data) {
-						async.eachSeries(data, function (elm, callback) {
+						async.each(data, function (elm, callback) {
 							var k, file_name, ext_name, langIso, langPath, local_path, op, output, req;
 
 							if (options.use_custom_language_codes &&
