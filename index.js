@@ -1,5 +1,5 @@
 'use strict';
-var chalk, fs, gutil, httpClient, path, paths, request, sprintf, through, util,
+var chalk, fs, gutil, httpsClient, path, paths, request, sprintf, through, util,
 	async, mkdirp;
 
 gutil = require('gulp-util');
@@ -11,7 +11,7 @@ sprintf = require('sprintf');
 util = require('util');
 fs = require('fs');
 paths = require('./libs/paths.js');
-httpClient = require('http');
+httpsClient = require('https');
 async = require('async');
 mkdirp = require('mkdirp');
 
@@ -36,7 +36,7 @@ module.exports = {
 						results += data.toString();
 					} else {
 						req.emit('error', new Error(res.statusCode + ': ' +
-						httpClient.STATUS_CODES[res.statusCode] + ' reaching the project'));
+						httpsClient.STATUS_CODES[res.statusCode] + ' reaching the project'));
 					}
 				});
 				res.on('end', function () {
@@ -75,7 +75,7 @@ module.exports = {
 						} else {
 							req.emit('error', new Error(res.statusCode +
 									'in resourceAttributes(): ' +
-									httpClient.STATUS_CODES[res.statusCode]));
+									httpsClient.STATUS_CODES[res.statusCode]));
 						}
 					} else {
 						attrs += data.toString('utf8');
@@ -146,7 +146,7 @@ module.exports = {
 			options = util._extend(options, opt);
 			request_options = {
 				host: _this._paths.host,
-				port: '80',
+				port: '443',
 				path: _this._paths.get_languages({
 					project: options.project
 				}),
@@ -166,7 +166,7 @@ module.exports = {
 						languages += data.toString('utf8');
 					} else {
 						res.emit('error', new Error(res.statusCode + ' in languages(): ' +
-							httpClient.STATUS_CODES[res.statusCode]));
+							httpsClient.STATUS_CODES[res.statusCode]));
 					}
 				});
 				res.on('error', function (err) {
@@ -259,7 +259,7 @@ module.exports = {
 								data = JSON.stringify(data);
 								request_options = {
 									host: _this._paths.host,
-									port: '80',
+									port: '443',
 									path: _this._paths.update_resource({
 										project: options.project,
 										resource: path.basename(file.path).replace(/\./,'')
@@ -271,7 +271,7 @@ module.exports = {
 										'content-length': Buffer.byteLength(data)
 									}
 								};
-								req = httpClient.request(request_options);
+								req = httpsClient.request(request_options);
 
 								gutil.log(
 									chalk.white('updating: ') +
@@ -298,7 +298,7 @@ module.exports = {
 											data = JSON.stringify(data);
 											request_options = {
 												host: _this._paths.host,
-												port: '80',
+												port: '443',
 												path: _this._paths.get_or_create_resources({
 													project: options.project
 												}),
@@ -309,7 +309,7 @@ module.exports = {
 													'content-length': Buffer.byteLength(data)
 												}
 											};
-											req2 = httpClient.request(request_options);
+											req2 = httpsClient.request(request_options);
 											msg = chalk.white('Creating new Resource: ') +
 														chalk.blue(path.basename(file.path));
 											req2.on('response', function (res2) {
@@ -321,7 +321,7 @@ module.exports = {
 													msg += chalk.red('✘ ');
 													msg += chalk.white('Error creating new resource ');
 													msg += chalk.magenta(path.basename(file.path)) + ': ';
-													msg += chalk.white(httpClient.STATUS_CODES[res2.statusCode]);
+													msg += chalk.white(httpsClient.STATUS_CODES[res2.statusCode]);
 
 													req2.emit('Error:', new gutil.PluginError({
 														plugin: 'gulp-transifex',
@@ -341,7 +341,7 @@ module.exports = {
 										} else {
 											msg += chalk.red('✘ ');
 											msg += chalk.blue('Error: ' +
-														httpClient.STATUS_CODES[res.statusCode]);
+														httpsClient.STATUS_CODES[res.statusCode]);
 											msg += chalk.magenta(' ' +
 											path.basename(file.path));
 
@@ -439,7 +439,7 @@ module.exports = {
 					data = JSON.stringify(data);
 					request_options = {
 						host: _this._paths.host,
-						port: '80',
+						port: '443',
 						path: _this._paths.get_or_create_resources({
 							project: options.project
 						}),
@@ -451,7 +451,7 @@ module.exports = {
 						}
 					};
 
-					req = httpClient.request(request_options);
+					req = httpsClient.request(request_options);
 
 					req.on('response', function (res) {
 						var msg = 'Uploading';
@@ -461,7 +461,7 @@ module.exports = {
 							msg += chalk.red('✘ ');
 							msg += chalk.white('Error creating new resource ');
 							msg += chalk.magenta(path.basename(file.path)) + ': ';
-							msg += chalk.white(httpClient.STATUS_CODES[res.statusCode]);
+							msg += chalk.white(httpsClient.STATUS_CODES[res.statusCode]);
 							buffer.emit('', new gutil.PluginError({
 								plugin: 'gulp-transifex',
 								message: msg,
@@ -514,7 +514,7 @@ module.exports = {
 				if (file.isBuffer()) {
 					request_options = {
 						host: _this._paths.host,
-						port: '80',
+						port: '443',
 						method: 'GET',
 						auth: options.user + ':' + options.password
 					};
@@ -558,7 +558,7 @@ module.exports = {
 								resource: path.basename(file.path).replace(/\./, ''),
 								language: langIso
 							});
-							req = httpClient.get(request_options, function (res) {
+							req = httpsClient.get(request_options, function (res) {
 								gutil.log(chalk.white('Downloading file: ') +
 									chalk.blue(path.basename(file.path)));
 
@@ -574,7 +574,7 @@ module.exports = {
 											res.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: res.statusCode + 'in pullResource()[data]: ' +
-													httpClient.STATUS_CODES[res.statusCode]
+													httpsClient.STATUS_CODES[res.statusCode]
 											}));
 										}
 									}
@@ -601,7 +601,7 @@ module.exports = {
 												plugin: 'gulp-transifex',
 												message: res.statusCode +
 													' in pullResource()[end]: ' +
-													httpClient.STATUS_CODES[res.statusCode]
+													httpsClient.STATUS_CODES[res.statusCode]
 										}));
 										output.end();
 									}
