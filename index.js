@@ -135,7 +135,7 @@ module.exports = {
 		this.languages = function (opt, callback) {
 			var req, request_options;
 			if (typeof opt === 'function') {
-				if (callback === null) {
+				if (callback === undefined) {
 					callback = opt;
 				}
 				opt = {
