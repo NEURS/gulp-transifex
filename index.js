@@ -562,6 +562,7 @@ module.exports = {
 								gutil.log(chalk.white('Downloading file: ') +
 									chalk.blue(path.basename(file.path)));
 
+								res.setEncoding('utf8');
 								res.on('data', function (data) {
 									if (parseInt(res.statusCode) !== 200) {
 										if (parseInt(res.statusCode) === 404) {
