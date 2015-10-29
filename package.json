@@ -1,7 +1,7 @@
 {
   "name": "gulp-transifex",
   "description": "Gulp plugin for uploading source languages files to transifex",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "homepage": "https://github.com/NEURS/gulp-transifex/",
   "repository": "https://github.com/NEURS/gulp-transifex.git",
   "keywords": [
@@ -12,8 +12,8 @@
   ],
   "maintainers": [
     {
-      "name": "Marcos L. Hernandez",
-      "email": "marcos@neurs.net",
+      "name": "Kevin J. Martin",
+      "email": "kevin@neurs.net",
       "web": "http://neurs.net"
     }
   ],

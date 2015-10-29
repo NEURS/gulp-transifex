@@ -14,13 +14,13 @@ var options = {
     base_path: <String optional. Defaults to '/api/2/project/'>,
     user: <String required. Transifex username>,
     password: <String required. Transifex Password>,
-    project: <String required. Transifex project's name>,
+    project: <String required. Transifex projects name>,
     local_path: <String optional. Local root path for the translations>,
     custom_language_codes:{
-        <ISO 639-1 language code>:<custom language code>
+        <ISO 639-1 language code>: <custom language code>
     },
-    use_custom_language_codes:<Boolean>,
-    language_codes_as_objects:<Boolean>
+    use_custom_language_codes: <Boolean>,
+    language_codes_as_objects: <Boolean>
 }
 ```
 
@@ -36,7 +36,7 @@ Additionally, if `language_codes_as_objects` is set to `true` it will return an 
 ```javascript
 [
     {
-        <ISO 639-1 language code>:<custom language code>
+        <ISO 639-1 language code>: <custom language code>
     },
     ...
 ]
