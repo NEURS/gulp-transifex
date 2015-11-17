@@ -53,7 +53,7 @@ var transifex = require('transifex').createClient(options)
 var gulp = require('gulp')
 
 gulp.task('upstream', function(){
-    gulp.src('path/to/source/language/*')
+    return gulp.src('path/to/source/language/*')
         .pipe(transifex.pushResource())
 })
 ```
@@ -67,7 +67,7 @@ var transifex = require('transifex').createClient(options)
 var gulp = require('gulp')
 
 gulp.task('downstream', function(){
-    gulp.src('path/to/source/language/*')
+    return gulp.src('path/to/source/language/*')
         .pipe(transifex.pullResource())
 })
 ```
