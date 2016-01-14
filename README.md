@@ -49,7 +49,7 @@ gulp-transifex will go file by file uploading them to the project as a resource
 Transifex will check if the file has changed and will store the changes
 
 ```javascript
-var transifex = require('transifex').createClient(options)
+var transifex = require('gulp-transifex').createClient(options)
 var gulp = require('gulp')
 
 gulp.task('upstream', function(){
@@ -63,7 +63,7 @@ Downloading translation files:
 Similarly, for every resource file, gulp-transifex will check on the server for the languages and will start going to every file in each language and copy it in the local translation folder: `options.local_path`
 
 ```javascript
-var transifex = require('transifex').createClient(options)
+var transifex = require('gulp-transifex').createClient(options)
 var gulp = require('gulp')
 
 gulp.task('downstream', function(){
@@ -79,7 +79,7 @@ Since this plugins makes remote requests you have to call it asynchronously if y
 need the translation files in next tasks, just return the stream:
 
 ```javascript
-var transifex = require('transifex').createClient(options)
+var transifex = require('gulp-transifex').createClient(options)
 var gulp = require('gulp')
 
 gulp.task('downstream', function(){
@@ -102,7 +102,7 @@ There are other methods exposed that doesn't return streams but accepts callback
 Gets an array of resources in the project
 
 ```javascript
-var transifex = require('transifex').createClient(options)
+var transifex = require('gulp-transifex').createClient(options)
 
 transifex.resources(function(data){
     ...
@@ -114,7 +114,7 @@ transifex.resources(function(data){
 Gets an array of language codes in the project
 
 ```javascript
-var transifex = require('transifex').createClient(options)
+var transifex = require('gulp-transifex').createClient(options)
 
 transifex.languages(function (data){
     ...
