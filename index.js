@@ -487,11 +487,29 @@ module.exports = {
 			});
 			return buffer;
 		};
-		this.pullResource = function (callback) {
+		this.pullResource = function (opt, callback) {
+			if (typeof opt === 'function') {
+				if (callback === undefined) {
+					callback = opt;
+				}
+				opt = {};
+			}
+
 			var buffer;
 
 			buffer = through.obj(function (file, enc, cb) {
-				var languages, request_options;
+				var languages = opt.languages, request_options;
+
+				const _languages = function (callback) {
+					if (!languages) {
+						languages = _this.languages({
+							use_custom_language_codes:options.use_custom_language_codes,
+							language_codes_as_objects:options.language_codes_as_objects
+						}, callback);
+					} else {
+						callback(languages);
+					}
+				};
 
 				if (file.isNull()) {
 					buffer.emit('error', new gutil.PluginError({
@@ -519,10 +537,7 @@ module.exports = {
 						auth: options.user + ':' + options.password
 					};
 
-					languages = _this.languages({
-						use_custom_language_codes:options.use_custom_language_codes,
-						language_codes_as_objects:options.language_codes_as_objects
-					}, function (data) {
+					_languages(function (data) {
 						async.each(data, function (elm, callback) {
 							var k, file_name, ext_name, langIso, langPath, local_path, op, output, req;
 
