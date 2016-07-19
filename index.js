@@ -374,7 +374,7 @@ module.exports = {
 											if (results[i] > 0) {
 												mod = true;
 
-												gutil.log(chalk.blue(i) + chalk.green(i));
+												gutil.log(chalk.blue(results[i]) + ' ' + chalk.green(i));
 											}
 										}
 
