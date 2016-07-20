@@ -42,6 +42,10 @@ describe('Transifex', function(){
 		client._paths.get_languages().should.be.a.String;
 		client._paths.get_languages().should.eql('/api/2/project/marcoslhc_personal/languages/');
 	  })
+	  it('should return the resource path as string', function(){
+		client._paths.delete_resource({ resource: 'resource' }).should.be.a.String;
+		client._paths.delete_resource({ resource: 'resource' }).should.eql('/api/2/project/marcoslhc_personal/resource/resource');
+	  });
 
 	});
 
@@ -108,5 +112,17 @@ describe('Transifex', function(){
 			}).write(file);
 		});
 
+	});
+
+	describe('#deleteResource()', function() {
+		it('should delete the resource', function(done) {
+			var client = transifex.createClient(options);
+			file = new gutil.File({
+				path: path.resolve(__dirname, '../fixture.po'),
+			});
+			client.deleteResource(function(data) {
+				done()
+			}).write(file);
+		});
 	});
 })

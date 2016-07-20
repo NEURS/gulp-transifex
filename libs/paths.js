@@ -38,6 +38,11 @@ module.exports = function(options) {
       return sprintf(this.base_path + '%(project)s/resource/%(resource)s/content/', util._extend({
         project: options.project
       }, vars));
+    },
+    delete_resource: function(vars) {
+      return sprintf(this.base_path + '%(project)s/resource/%(resource)s', util._extend({
+        project: options.project
+      }, vars));
     }
   };
 };

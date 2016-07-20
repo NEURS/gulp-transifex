@@ -216,6 +216,59 @@ module.exports = {
 
 			req.end();
 		};
+		this.deleteResource = function (callback) {
+			var buffer;
+			buffer = through.obj((function (file, enc, cb) {
+				var data, msg, req, request_options, isNewer = true;
+
+				if (file.isDirectory()) {
+					return cb();
+				}
+
+				request_options = {
+					host: _this._paths.host,
+					port: '443',
+					path: _this._paths.delete_resource({
+						project: options.project,
+						resource: _this.resourceName(file)
+					}),
+					method: 'DELETE',
+					auth: options.user + ':' + options.password,
+					headers: {
+						'content-length': 0
+					}
+				};
+
+				req = httpsClient.request(request_options);
+				req.on('response', function (res) {
+					if (parseInt(res.statusCode) === 204) {
+						msg = chalk.green('✔ ') + chalk.blue('Deletion successful');
+					} else {
+						msg = chalk.red('✘ ') + chalk.white('Error deleting ') + chalk.magenta(path.basename(file.path)) + ': ' + chalk.white(STATUS_CODES[res2.statusCode]);
+						buffer.emit('Error:', new gutil.PluginError({														
+							plugin: 'gulp-transifex',
+							message: msg,
+							fileName: file.path
+						}));
+					}
+					gutil.log(msg);
+					cb();
+				});
+				req.on('error', function (err) {
+					buffer.emit('err', err);
+				});
+				gutil.log('Deleting file ' + chalk.blue(file.path));
+				req.end();
+			}), function (cb) {
+				if (callback) {
+					callback();
+				}
+
+				cb();				
+			});
+
+			return buffer;
+		};
 		this.pushResource = function (callback) {
 			var buffer;
 			buffer = through.obj((function (file, enc, cb) {

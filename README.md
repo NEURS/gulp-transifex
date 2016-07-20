@@ -72,6 +72,20 @@ gulp.task('downstream', function(){
 })
 ```
 
+Deleting translation files:
+---------------------------
+For every file, gulp-transifex will remove the matching resource in transifex.
+
+```javascript
+var transifex = require('gulp-transifex').createClient(options)
+var gulp = require('gulp')
+
+gulp.task('downstream', function(){
+    return gulp.src('path/to/source/language/*')
+        .pipe(transifex.deleteResource())
+})
+```
+
 Chaining Tasks with gulp-transifex
 -----------------------------------
 
