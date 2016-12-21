@@ -262,7 +262,7 @@ module.exports = {
 									port: '443',
 									path: _this._paths.update_resource({
 										project: options.project,
-										resource: path.basename(file.path).replace(/\./,'')
+										resource: path.basename(file.path).replace(/\./g,'')
 									}),
 									method: 'PUT',
 									auth: options.user + ':' + options.password,
@@ -292,7 +292,7 @@ module.exports = {
 												name: path.basename(file.path)
 													.replace(path.extname(file.path), ''),
 												slug: path.basename(file.path)
-													.replace(/\./,''),
+													.replace(/\./g,''),
 												i18n_type: options.i18n_type
 											};
 											data = JSON.stringify(data);
@@ -555,7 +555,7 @@ module.exports = {
 							}
 
 							request_options.path = _this._paths.get_or_create_translation({
-								resource: path.basename(file.path).replace(/\./, ''),
+								resource: path.basename(file.path).replace(/\./g, ''),
 								language: langIso
 							});
 							req = httpsClient.get(request_options, function (res) {
