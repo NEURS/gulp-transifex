@@ -1,6 +1,6 @@
 'use strict';
 var chalk, fs, gutil, httpsClient, path, paths, request, sprintf, through, util,
-	async, mkdirp;
+	async, mkdirp, STATUS_CODES;
 
 gutil = require('gulp-util');
 through = require('through2');
@@ -12,6 +12,7 @@ util = require('util');
 fs = require('fs');
 paths = require('./libs/paths.js');
 httpsClient = require('https');
+STATUS_CODES = require('http').STATUS_CODES;
 async = require('async');
 mkdirp = require('mkdirp');
 
@@ -36,7 +37,7 @@ module.exports = {
 						results += data.toString();
 					} else {
 						req.emit('error', new Error(res.statusCode + ': ' +
-						httpsClient.STATUS_CODES[res.statusCode] + ' reaching the project'));
+						STATUS_CODES[res.statusCode] + ' reaching the project'));
 					}
 				});
 				res.on('end', function () {
@@ -75,7 +76,7 @@ module.exports = {
 						} else {
 							req.emit('error', new Error(res.statusCode +
 									'in resourceAttributes(): ' +
-									httpsClient.STATUS_CODES[res.statusCode]));
+									STATUS_CODES[res.statusCode]));
 						}
 					} else {
 						attrs += data.toString('utf8');
@@ -166,7 +167,7 @@ module.exports = {
 						languages += data.toString('utf8');
 					} else {
 						res.emit('error', new Error(res.statusCode + ' in languages(): ' +
-							httpsClient.STATUS_CODES[res.statusCode]));
+							STATUS_CODES[res.statusCode]));
 					}
 				});
 				res.on('error', function (err) {
@@ -321,7 +322,7 @@ module.exports = {
 													msg += chalk.red('✘ ');
 													msg += chalk.white('Error creating new resource ');
 													msg += chalk.magenta(path.basename(file.path)) + ': ';
-													msg += chalk.white(httpsClient.STATUS_CODES[res2.statusCode]);
+													msg += chalk.white(STATUS_CODES[res2.statusCode]);
 
 													req2.emit('Error:', new gutil.PluginError({
 														plugin: 'gulp-transifex',
@@ -341,7 +342,7 @@ module.exports = {
 										} else {
 											msg += chalk.red('✘ ');
 											msg += chalk.blue('Error: ' +
-														httpsClient.STATUS_CODES[res.statusCode]);
+														STATUS_CODES[res.statusCode]);
 											msg += chalk.magenta(' ' +
 											path.basename(file.path));
 
@@ -461,7 +462,7 @@ module.exports = {
 							msg += chalk.red('✘ ');
 							msg += chalk.white('Error creating new resource ');
 							msg += chalk.magenta(path.basename(file.path)) + ': ';
-							msg += chalk.white(httpsClient.STATUS_CODES[res.statusCode]);
+							msg += chalk.white(STATUS_CODES[res.statusCode]);
 							buffer.emit('', new gutil.PluginError({
 								plugin: 'gulp-transifex',
 								message: msg,
@@ -575,7 +576,7 @@ module.exports = {
 											res.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
 												message: res.statusCode + 'in pullResource()[data]: ' +
-													httpsClient.STATUS_CODES[res.statusCode]
+													STATUS_CODES[res.statusCode]
 											}));
 										}
 									}
@@ -602,7 +603,7 @@ module.exports = {
 												plugin: 'gulp-transifex',
 												message: res.statusCode +
 													' in pullResource()[end]: ' +
-													httpsClient.STATUS_CODES[res.statusCode]
+													STATUS_CODES[res.statusCode]
 										}));
 										output.end();
 									}
