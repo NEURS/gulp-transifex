@@ -20,7 +20,8 @@ var options = {
         <ISO 639-1 language code>: <custom language code>
     },
     use_custom_language_codes: <Boolean>,
-    language_codes_as_objects: <Boolean>
+    language_codes_as_objects: <Boolean>,
+    translation_mode: <String optional. See 'https://docs.transifex.com/api/translations#downloading-and-uploading-translations'>
 }
 ```
 
