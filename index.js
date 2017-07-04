@@ -557,7 +557,8 @@ module.exports = {
 
 							request_options.path = _this._paths.get_or_create_translation({
 								resource: path.basename(file.path).replace(/\./g, ''),
-								language: langIso
+								language: langIso,
+                                translation_mode: options.translation_mode,
 							});
 							req = httpsClient.get(request_options, function (res) {
 								gutil.log(chalk.white('Downloading file: ') +

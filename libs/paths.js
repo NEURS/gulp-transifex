@@ -22,9 +22,15 @@ module.exports = function(options) {
       });
     },
     get_or_create_translation: function(vars) {
-      return sprintf(this.base_path + '%(project)s/resource/%(resource)s/translation/%(language)s/', util._extend({
-        project: options.project
+      var path = sprintf(this.base_path + '%(project)s/resource/%(resource)s/translation/%(language)s/', util._extend({
+        project: options.project,
       }, vars));
+
+      if (vars.translation_mode) {
+        path += '?mode=' + vars.translation_mode;
+      }
+
+      return path;
     },
     local_translations_path: function(vars) {
       return sprintf('%(local_path)s/%(language)s/', util._extend({
