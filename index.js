@@ -561,6 +561,8 @@ module.exports = {
                                 translation_mode: options.translation_mode,
 							});
 							req = httpsClient.get(request_options, function (res) {
+								var skip = false;
+
 								gutil.log(chalk.white('Downloading file: ') +
 									chalk.blue(path.basename(file.path)));
 
@@ -571,8 +573,7 @@ module.exports = {
 											gutil.log(chalk.red('✘ ') +
 												chalk.blue(request_options.path) +
 												chalk.white('Does not exist'));
-											buffer.push(file);
-											return callback();
+											skip = true;
 										} else {
 											res.emit('error', new gutil.PluginError({
 												plugin: 'gulp-transifex',
@@ -591,6 +592,11 @@ module.exports = {
 
 								res.on('end', function () {
 									var data;
+
+									if (skip) {
+										buffer.push(file);
+										return callback();
+									}
 
 									gutil.log(chalk.green('✔ ') +
 										chalk.blue(langIso, path.basename(file.path)) +
